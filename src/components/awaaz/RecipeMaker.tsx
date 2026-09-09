@@ -10,9 +10,12 @@ import {
   Plus,
   Mic,
   MicOff,
+  Flame,
+  PiggyBank,
 } from "lucide-react";
 import { ingredients, recipes, pkr, type Recipe } from "@/lib/awaaz-data";
-import { SectionHead, EmptyState } from "./BillAudit";
+import { SectionHead, EmptyState, Stat } from "./BillAudit";
+import { pantryGrid, remixFor, weeklySavings } from "@/lib/awaaz-remix";
 
 type Match = Recipe & { matched: string[]; missing: string[]; score: number };
 
