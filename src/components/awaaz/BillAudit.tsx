@@ -1,5 +1,21 @@
 import { useState } from "react";
-import { Zap, Calculator, Lightbulb, TrendingDown, TriangleAlert as AlertTriangle, Plug, RotateCcw, SolarPanel, BatteryCharging, CircleCheck as CheckCircle2 } from "lucide-react";
+import {
+  Zap,
+  Calculator,
+  Lightbulb,
+  TrendingDown,
+  TriangleAlert as AlertTriangle,
+  Plug,
+  RotateCcw,
+  SolarPanel,
+  BatteryCharging,
+  CircleCheck as CheckCircle2,
+  ShieldCheck,
+  Ghost,
+  Wallet,
+  Users,
+  Sparkles,
+} from "lucide-react";
 import {
   calculateSolar,
   defaultAppliances,
@@ -9,6 +25,20 @@ import {
   type Appliance,
   type SolarType,
 } from "@/lib/awaaz-data";
+import {
+  applyPreset,
+  budgetGuard,
+  calculateVampire,
+  defaultStandbyDevices,
+  householdPresets,
+  lifelineStatus,
+  presetUnits,
+  type BudgetVerdict,
+  type PresetId,
+  type SlabStatus,
+  type StandbyDevice,
+  type VampireResult,
+} from "@/lib/awaaz-household";
 
 type Result = {
   billedUnits: number;
@@ -22,32 +52,57 @@ type Result = {
   savings: number;
   gap: number;
   solar: ReturnType<typeof calculateSolar>;
+  lifeline: SlabStatus;
+  vampire: VampireResult;
+  budget: BudgetVerdict;
 };
 
 export function BillAudit() {
   const [appliances, setAppliances] = useState<Appliance[]>(defaultAppliances);
+  const [preset, setPreset] = useState<PresetId | null>(null);
   const [discoId, setDiscoId] = useState("k-electric");
   const [billedUnits, setBilledUnits] = useState(412);
   const [billAmount, setBillAmount] = useState(18500);
+  const [budget, setBudget] = useState(20000);
   const [solarType, setSolarType] = useState<SolarType>("none");
   const [systemKw, setSystemKw] = useState(5);
   const [batteryKwh, setBatteryKwh] = useState(10);
+  const [standby, setStandby] = useState<StandbyDevice[]>(defaultStandbyDevices);
   const [result, setResult] = useState<Result | null>(null);
   const disco = discos.find((item) => item.id === discoId) ?? discos[0]!;
 
-  const update = (id: string, field: "watts" | "hours" | "qty", value: number) =>
+  const update = (id: string, field: "watts" | "hours" | "qty", value: number) => {
+    setPreset(null);
     setAppliances((list) =>
       list.map((a) => (a.id === id ? { ...a, [field]: Number.isFinite(value) ? value : 0 } : a)),
+    );
+  };
+
+  const usePreset = (id: PresetId) => {
+    const p = householdPresets.find((h) => h.id === id)!;
+    const list = applyPreset(p);
+    setAppliances(list);
+    setPreset(id);
+    setBilledUnits(Math.round(presetUnits(p)));
+    setResult(null);
+  };
+
+  const toggleStandby = (id: string) =>
+    setStandby((list) =>
+      list.map((d) => (d.id === id ? { ...d, qty: d.qty > 0 ? 0 : (defaultStandbyDevices.find((x) => x.id === id)?.qty ?? 1) } : d)),
     );
 
   const reset = () => {
     setAppliances(defaultAppliances);
+    setPreset(null);
     setDiscoId("k-electric");
     setBilledUnits(412);
     setBillAmount(18500);
+    setBudget(20000);
     setSolarType("none");
     setSystemKw(5);
     setBatteryKwh(10);
+    setStandby(defaultStandbyDevices);
     setResult(null);
   };
 
@@ -76,6 +131,9 @@ export function BillAudit() {
       .sort((a, b) => b.units - a.units);
 
     const top3 = perAppliance.slice(0, 3).reduce((s, p) => s + p.cost, 0);
+    const solar = calculateSolar(solarType, units, systemKw, batteryKwh, disco);
+    const projected = solarType === "none" ? total : solar.billAfterSolar;
+
     setResult({
       billedUnits: units,
       estimatedUnits,
@@ -87,7 +145,13 @@ export function BillAudit() {
       perAppliance,
       savings: top3 * 0.22,
       gap: estimatedUnits - units,
-      solar: calculateSolar(solarType, units, systemKw, batteryKwh, disco),
+      solar,
+      lifeline: lifelineStatus(units),
+      vampire: calculateVampire(
+        standby.filter((d) => d.qty > 0),
+        marginalRate * (1 + disco.taxRate),
+      ),
+      budget: budgetGuard(projected, budget),
     });
   };
 
@@ -96,26 +160,78 @@ export function BillAudit() {
       <SectionHead
         icon={<Zap className="h-5 w-5" />}
         title="Utility Bill Audit & Energy Calculator"
-        subtitle="Audit your DISCO tariff, find energy hogs, and model solar savings."
+        subtitle="Audit your DISCO tariff, find energy hogs, guard your budget and model solar savings."
       />
+
+      <div className="rounded-2xl border bg-card p-5 shadow-sm">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h3 className="flex items-center gap-2 text-base font-semibold">
+            <Users className="h-4 w-4 text-primary" /> One-tap household presets
+          </h3>
+          <span className="status-badge">
+            <Sparkles className="h-3 w-3" /> New here? Start with a preset
+          </span>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-3">
+          {householdPresets.map((p) => {
+            const active = preset === p.id;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => usePreset(p.id)}
+                aria-pressed={active}
+                className={`preset-chip ${active ? "preset-chip-active" : ""}`}
+              >
+                <span className="text-sm font-bold">
+                  {p.label} <span className="text-xs font-normal text-muted-foreground">{p.urdu}</span>
+                </span>
+                <span className="text-xs text-muted-foreground">{p.people}</span>
+                <span className="mt-1 text-xs font-semibold text-primary">
+                  ≈ {Math.round(presetUnits(p))} units / month
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        {preset && (
+          <p className="tab-enter mt-3 rounded-xl bg-primary/10 p-3 text-xs">
+            {householdPresets.find((p) => p.id === preset)!.note} You can still fine-tune every
+            appliance below.
+          </p>
+        )}
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
         <div className="rounded-2xl border bg-card p-5 shadow-sm">
           <div className="mb-4 flex items-center justify-between gap-3">
             <h3 className="text-base font-semibold">Your latest bill</h3>
-            <span className="status-badge"><CheckCircle2 className="h-3 w-3" /> Tariff-aware</span>
+            <span className="status-badge">
+              <CheckCircle2 className="h-3 w-3" /> Tariff-aware
+            </span>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Distribution company">
-              <select value={discoId} onChange={(e) => setDiscoId(e.target.value)} className="input-base">
-                {discos.map((item) => <option key={item.id} value={item.id}>{item.name} ({item.city})</option>)}
+            <Field label="Distribution company (DISCO)">
+              <select
+                value={discoId}
+                onChange={(e) => setDiscoId(e.target.value)}
+                className="input-base"
+              >
+                {discos.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name} ({item.city})
+                  </option>
+                ))}
               </select>
             </Field>
             <Field label="Units billed (kWh)">
               <input
                 type="number"
                 value={billedUnits}
-                onChange={(e) => setBilledUnits(Number(e.target.value))}
+                onChange={(e) => {
+                  setBilledUnits(Number(e.target.value));
+                  setPreset(null);
+                }}
                 className="input-base"
               />
             </Field>
@@ -127,16 +243,63 @@ export function BillAudit() {
                 className="input-base"
               />
             </Field>
+            <Field label="Monthly budget limit (PKR)">
+              <input
+                type="number"
+                value={budget}
+                onChange={(e) => setBudget(Number(e.target.value))}
+                className="input-base"
+              />
+            </Field>
           </div>
 
-          <div className="mt-6 rounded-2xl border border-emerald-400/20 bg-emerald-400/5 p-4">
-            <div className="flex items-center gap-2"><SolarPanel className="h-4 w-4 text-emerald-300" /><h3 className="text-base font-semibold">Solar system status</h3></div>
+          <LifelineIndicator units={billedUnits} />
+
+          <div className="mt-6 neon-card p-4">
+            <div className="flex items-center gap-2">
+              <SolarPanel className="h-4 w-4 text-primary" />
+              <h3 className="text-base font-semibold">Solar tier</h3>
+            </div>
             <div className="mt-3 grid grid-cols-2 gap-2">
               {(["none", "on-grid", "off-grid", "hybrid"] as SolarType[]).map((type) => (
-                <button key={type} type="button" onClick={() => setSolarType(type)} className={`rounded-xl border px-3 py-2 text-left text-sm capitalize transition ${solarType === type ? "border-emerald-300 bg-emerald-400/15 text-emerald-200" : "border-slate-700 bg-slate-900/60 text-slate-300 hover:border-slate-500"}`}>{type === "none" ? "None" : type.replace("-", " ")}</button>
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => setSolarType(type)}
+                  className={`rounded-xl border px-3 py-2 text-left text-sm capitalize transition ${
+                    solarType === type
+                      ? "border-primary bg-primary/15 text-primary"
+                      : "border-border bg-surface text-muted-foreground hover:border-primary/40"
+                  }`}
+                >
+                  {type === "none" ? "No solar" : type.replace("-", " ")}
+                </button>
               ))}
             </div>
-            {solarType !== "none" && <div className="mt-4 grid gap-4 sm:grid-cols-2"><Field label={`Solar capacity: ${systemKw} kW`}><input type="range" min="1" max="20" value={systemKw} onChange={(e) => setSystemKw(Number(e.target.value))} className="w-full accent-emerald-400" /></Field><Field label={`Battery storage: ${batteryKwh} kWh`}><input type="range" min="0" max="40" value={batteryKwh} onChange={(e) => setBatteryKwh(Number(e.target.value))} className="w-full accent-emerald-400" /></Field></div>}
+            {solarType !== "none" && (
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <Field label={`Solar capacity: ${systemKw} kW`}>
+                  <input
+                    type="range"
+                    min="1"
+                    max="20"
+                    value={systemKw}
+                    onChange={(e) => setSystemKw(Number(e.target.value))}
+                    className="w-full accent-[var(--primary)]"
+                  />
+                </Field>
+                <Field label={`Battery storage: ${batteryKwh} kWh`}>
+                  <input
+                    type="range"
+                    min="0"
+                    max="40"
+                    value={batteryKwh}
+                    onChange={(e) => setBatteryKwh(Number(e.target.value))}
+                    className="w-full accent-[var(--primary)]"
+                  />
+                </Field>
+              </div>
+            )}
           </div>
 
           <h3 className="mt-6 mb-3 text-base font-semibold">Appliances at home</h3>
@@ -178,6 +341,33 @@ export function BillAudit() {
             ))}
           </div>
 
+          <h3 className="mt-6 mb-1 flex items-center gap-2 text-base font-semibold">
+            <Ghost className="h-4 w-4 text-warning" /> Standby “vampire” devices
+          </h3>
+          <p className="mb-3 text-xs text-muted-foreground">
+            Tap the things that stay plugged in 24 hours a day.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {defaultStandbyDevices.map((d) => {
+              const on = (standby.find((s) => s.id === d.id)?.qty ?? 0) > 0;
+              return (
+                <button
+                  key={d.id}
+                  type="button"
+                  onClick={() => toggleStandby(d.id)}
+                  aria-pressed={on}
+                  className={`rounded-full border px-3.5 py-2 text-xs font-semibold transition active:scale-95 ${
+                    on
+                      ? "border-warning bg-warning/15 text-warning"
+                      : "bg-surface text-muted-foreground hover:bg-secondary"
+                  }`}
+                >
+                  {d.name} · {d.watts}W
+                </button>
+              );
+            })}
+          </div>
+
           <div className="mt-5 flex flex-wrap gap-3">
             <button onClick={audit} className="btn-primary">
               <Calculator className="h-4 w-4" /> Audit my bill
@@ -193,7 +383,7 @@ export function BillAudit() {
             <EmptyState
               icon={<Zap className="h-6 w-6" />}
               title="No audit yet"
-              text="Tap “Audit my bill” to see your slab-wise breakdown, the appliances eating your units, and how much you can save."
+              text="Pick a household preset or fill your details, then tap “Audit my bill” to see your slab-wise breakdown, budget guard and hidden standby drain."
             />
           ) : (
             <div className="tab-enter space-y-4">
@@ -204,7 +394,11 @@ export function BillAudit() {
                 <Stat label="Possible saving" value={pkr(result.savings)} accent />
               </div>
 
+              <BudgetGuardCard verdict={result.budget} budget={budget} />
+
               {solarType !== "none" && <SolarSummary result={result.solar} type={solarType} />}
+
+              <VampireCard result={result.vampire} />
 
               <div
                 className={`flex items-start gap-3 rounded-2xl border p-4 text-sm ${
@@ -222,7 +416,9 @@ export function BillAudit() {
               </div>
 
               <div className="rounded-2xl border bg-card p-5 shadow-sm">
-                <h4 className="mb-3 text-sm font-semibold">Slab-wise breakdown</h4>
+                <h4 className="mb-3 text-sm font-semibold">
+                  Slab-wise breakdown — {disco.name}, {disco.city}
+                </h4>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead className="text-muted-foreground">
@@ -289,7 +485,7 @@ export function BillAudit() {
                       </div>
                       <div className="mt-1 h-2 overflow-hidden rounded-full bg-secondary">
                         <div
-                          className={`h-full rounded-full transition-all duration-700 ${p.share > 20 ? "bg-gradient-to-r from-rose-400 via-amber-300 to-emerald-300" : "bg-gradient-to-r from-emerald-700 to-emerald-300"}`}
+                          className={`h-full rounded-full transition-all duration-700 ${p.share > 20 ? "bg-gradient-to-r from-destructive via-warning to-primary" : "bg-gradient-to-r from-primary/40 to-primary"}`}
                           style={{ width: `${Math.min(100, p.share)}%` }}
                         />
                       </div>
@@ -300,7 +496,7 @@ export function BillAudit() {
 
               <div className="rounded-2xl border bg-card p-5 shadow-sm">
                 <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold">
-                  <Lightbulb className="h-4 w-4 text-saffron" /> Appliance coach — top actions
+                  <Lightbulb className="h-4 w-4 text-warning" /> Appliance coach — top actions
                 </h4>
                 <ul className="space-y-3">
                   {result.perAppliance.slice(0, 4).map((p) => (
@@ -325,16 +521,140 @@ export function BillAudit() {
   );
 }
 
-function SolarSummary({ result, type }: { result: Result["solar"]; type: SolarType }) {
-  const title = type === "hybrid" ? "Estimated Bill After Solar" : type === "off-grid" ? "Off-grid independence" : "Net-metering savings";
+function LifelineIndicator({ units }: { units: number }) {
+  const status = lifelineStatus(units);
+  const tone =
+    status.tone === "good"
+      ? "neon-card"
+      : status.tone === "warn"
+        ? "warn-card"
+        : "rounded-2xl border border-destructive/40 bg-destructive/10";
   return (
-    <div className="solar-card rounded-2xl border border-emerald-400/30 bg-emerald-400/10 p-5">
-      <div className="flex items-start justify-between gap-4">
-        <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-300">{title}</p><p className="mt-1 text-3xl font-bold text-emerald-200">{pkr(result.billAfterSolar)}</p><p className="text-sm text-emerald-100/70">{pkr(result.monthlySavings)} estimated monthly reduction</p></div>
-        {type === "off-grid" ? <BatteryCharging className="h-7 w-7 text-emerald-300" /> : <SolarPanel className="h-7 w-7 text-emerald-300" />}
+    <div className={`mt-5 p-4 ${tone}`}>
+      <div className="flex items-start gap-3">
+        <ShieldCheck
+          className={`mt-0.5 h-5 w-5 shrink-0 ${status.tone === "good" ? "text-primary" : status.tone === "warn" ? "text-warning" : "text-destructive"}`}
+        />
+        <div className="min-w-0">
+          <p className="text-sm font-semibold">{status.title}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{status.message}</p>
+          {status.unitsToNextTier !== null && (
+            <p className="mt-2 text-xs font-semibold text-primary">
+              {Math.max(0, Math.round(status.unitsToNextTier))} units of headroom left this month.
+            </p>
+          )}
+        </div>
       </div>
-      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4"><Stat label="Generation" value={`${Math.round(result.generation)} kWh`} accent /><Stat label="Solar offset" value={`${Math.round(result.selfConsumed)} kWh`} /><Stat label="Grid export" value={`${Math.round(result.exported)} kWh`} /><Stat label="Backup" value={`${result.backupHours.toFixed(1)} hrs`} /></div>
-      <p className="mt-4 rounded-xl bg-slate-950/30 p-3 text-sm text-emerald-100">{result.summary}</p>
+    </div>
+  );
+}
+
+function BudgetGuardCard({ verdict, budget }: { verdict: BudgetVerdict; budget: number }) {
+  const cls =
+    verdict.status === "over"
+      ? "rounded-2xl border border-destructive/45 bg-destructive/10"
+      : verdict.status === "close"
+        ? "warn-card"
+        : "neon-card";
+  const bar =
+    verdict.status === "over"
+      ? "bg-destructive"
+      : verdict.status === "close"
+        ? "bg-warning"
+        : "bg-primary";
+  return (
+    <div className={`${cls} p-5`}>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="flex items-center gap-2 text-sm font-semibold">
+          <Wallet className="h-4 w-4" /> Monthly budget guard
+        </p>
+        <span className={verdict.status === "safe" ? "status-badge" : "warn-badge"}>
+          {verdict.headline}
+        </span>
+      </div>
+      <p className="mt-2 text-2xl font-bold">
+        {Math.round(verdict.usedPct)}%{" "}
+        <span className="text-sm font-normal text-muted-foreground">of {pkr(budget)} limit</span>
+      </p>
+      <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-secondary">
+        <div
+          className={`h-full rounded-full transition-all duration-700 ${bar}`}
+          style={{ width: `${Math.min(100, verdict.usedPct)}%` }}
+        />
+      </div>
+      <p className="mt-3 text-sm">
+        {verdict.difference > 0
+          ? `Projected bill is ${pkr(verdict.difference)} above your limit.`
+          : `You have ${pkr(Math.abs(verdict.difference))} of room left.`}{" "}
+        {verdict.advice}
+      </p>
+    </div>
+  );
+}
+
+function VampireCard({ result }: { result: VampireResult }) {
+  if (result.rows.length === 0) return null;
+  return (
+    <div className="warn-card p-5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="flex items-center gap-2 text-sm font-semibold">
+          <Ghost className="h-4 w-4 text-warning" /> Standby vampire power
+        </p>
+        <span className="warn-badge">{Math.round(result.watts)} W always on</span>
+      </div>
+      <p className="mt-2 text-2xl font-bold text-warning">{pkr(result.monthlyCost)}</p>
+      <p className="text-sm text-muted-foreground">
+        {Math.round(result.monthlyUnits)} units a month wasted while nothing is being used — about{" "}
+        {pkr(result.yearlyCost)} a year.
+      </p>
+      <ul className="mt-4 space-y-2">
+        {result.rows.slice(0, 4).map((r) => (
+          <li
+            key={r.name}
+            className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 rounded-xl bg-surface/60 p-3 text-sm"
+          >
+            <span className="min-w-0">
+              <span className="font-medium">{r.name}</span>
+              <span className="block text-xs text-muted-foreground">{r.tip}</span>
+            </span>
+            <span className="shrink-0 font-semibold">{pkr(r.cost)}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function SolarSummary({ result, type }: { result: Result["solar"]; type: SolarType }) {
+  const title =
+    type === "hybrid"
+      ? "Estimated bill after hybrid solar"
+      : type === "off-grid"
+        ? "Off-grid independence"
+        : "Net-metering savings";
+  return (
+    <div className="neon-card p-5">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="eyebrow">{title}</p>
+          <p className="mt-1 text-3xl font-bold text-primary">{pkr(result.billAfterSolar)}</p>
+          <p className="text-sm text-muted-foreground">
+            {pkr(result.monthlySavings)} estimated monthly reduction
+          </p>
+        </div>
+        {type === "off-grid" ? (
+          <BatteryCharging className="h-7 w-7 text-primary" />
+        ) : (
+          <SolarPanel className="h-7 w-7 text-primary" />
+        )}
+      </div>
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <Stat label="Generation" value={`${Math.round(result.generation)} kWh`} accent />
+        <Stat label="Solar offset" value={`${Math.round(result.selfConsumed)} kWh`} />
+        <Stat label="Grid export" value={`${Math.round(result.exported)} kWh`} />
+        <Stat label="Backup" value={`${result.backupHours.toFixed(1)} hrs`} />
+      </div>
+      <p className="mt-4 rounded-xl bg-background/40 p-3 text-sm">{result.summary}</p>
     </div>
   );
 }
