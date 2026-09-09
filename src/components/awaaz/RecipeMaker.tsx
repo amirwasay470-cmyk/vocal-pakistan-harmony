@@ -1,0 +1,322 @@
+import { useRef, useState } from "react";
+import {
+  ChefHat,
+  Clock,
+  Users,
+  Sparkles,
+  RotateCcw,
+  Check,
+  Wallet,
+  Plus,
+  Mic,
+  MicOff,
+} from "lucide-react";
+import { ingredients, recipes, pkr, type Recipe } from "@/lib/awaaz-data";
+import { SectionHead, EmptyState } from "./BillAudit";
+
+type Match = Recipe & { matched: string[]; missing: string[]; score: number };
+
+const defaultSelected = ["Cooked Rice", "Daal", "Onion", "Tomatoes", "Eggs", "Roti / Naan"];
+
+const simulatedHeard = [
+  "Baqiya Chawal",
+  "Bhindi",
+  "Qeema",
+  "Dahi",
+  "Aloo",
+  "Shimla Mirch",
+];
+
+const titleCase = (s: string) => s.trim().replace(/\b\w/g, (c) => c.toUpperCase());
+
+export function RecipeMaker() {
+  const [selected, setSelected] = useState<string[]>(defaultSelected);
+  const [custom, setCustom] = useState<string[]>([]);
+  const [draft, setDraft] = useState("");
+  const [listening, setListening] = useState(false);
+  const [voiceNote, setVoiceNote] = useState<string | null>(null);
+  const [servings, setServings] = useState(4);
+  const [maxMinutes, setMaxMinutes] = useState(30);
+  const [matches, setMatches] = useState<Match[] | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const allChips = [...ingredients, ...custom];
+
+  const toggle = (item: string) =>
+    setSelected((s) => (s.includes(item) ? s.filter((i) => i !== item) : [...s, item]));
+
+  const addItem = (raw: string, note?: string) => {
+    const item = titleCase(raw);
+    if (!item) return;
+    setCustom((c) => (allChips.includes(item) ? c : [...c, item]));
+    setSelected((s) => (s.includes(item) ? s : [...s, item]));
+    setDraft("");
+    if (note) setVoiceNote(note);
+  };
+
+  const startVoice = () => {
+    if (listening) return;
+    const SR =
+      typeof window !== "undefined" &&
+      ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
+    setVoiceNote(null);
+    setListening(true);
+
+    if (SR) {
+      try {
+        const rec = new SR();
+        rec.lang = "ur-PK";
+        rec.interimResults = false;
+        rec.maxAlternatives = 1;
+        rec.onresult = (e: any) => {
+          const text = e.results?.[0]?.[0]?.transcript ?? "";
+          if (text) addItem(text, `Heard “${titleCase(text)}” and added it to your fridge.`);
+        };
+        rec.onerror = () => {
+          setVoiceNote("Microphone unavailable — type the item instead.");
+        };
+        rec.onend = () => setListening(false);
+        rec.start();
+        return;
+      } catch {
+        /* fall through to simulation */
+      }
+    }
+
+    timer.current = setTimeout(() => {
+      const guess = simulatedHeard[Math.floor(Math.random() * simulatedHeard.length)]!;
+      addItem(guess, `Voice input isn't supported here, so we added a sample: “${guess}”.`);
+      setListening(false);
+    }, 1400);
+  };
+
+  const cook = () => {
+    const scored = recipes
+      .map((r) => {
+        const matched = r.uses.filter((u) => selected.includes(u));
+        const missing = r.uses.filter((u) => !selected.includes(u));
+        return { ...r, matched, missing, score: matched.length / r.uses.length };
+      })
+      .filter((r) => r.matched.length > 0 && r.minutes <= maxMinutes)
+      .sort((a, b) => b.score - a.score || a.minutes - b.minutes);
+    setMatches(scored);
+    setOpenId(scored[0]?.id ?? null);
+  };
+
+  const reset = () => {
+    setSelected(defaultSelected);
+    setCustom([]);
+    setDraft("");
+    setVoiceNote(null);
+    setServings(4);
+    setMaxMinutes(30);
+    setMatches(null);
+  };
+
+  return (
+    <div className="tab-enter space-y-6">
+      <SectionHead
+        icon={<ChefHat className="h-5 w-5" />}
+        title="Leftover Recipe Maker"
+        subtitle="Turn last night's baqiya khana into a fresh meal instead of throwing it away."
+      />
+
+      <div className="rounded-2xl border bg-card p-5 shadow-sm">
+        <h3 className="mb-3 text-base font-semibold">What's left in the fridge?</h3>
+        <div className="flex flex-wrap gap-2">
+          {allChips.map((item) => {
+            const on = selected.includes(item);
+            return (
+              <button
+                key={item}
+                onClick={() => toggle(item)}
+                className={`inline-flex min-h-11 items-center gap-1.5 rounded-full border px-4 py-2 text-sm transition-all active:scale-95 ${
+                  on
+                    ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                    : "bg-surface hover:bg-secondary"
+                }`}
+              >
+                {on && <Check className="h-3.5 w-3.5" />}
+                {item}
+              </button>
+            );
+          })}
+        </div>
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            addItem(draft);
+          }}
+          className="mt-4 flex flex-wrap gap-2"
+        >
+          <input
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            placeholder="Add anything else — bhindi, qeema, dahi…"
+            aria-label="Add a custom leftover"
+            className="input-base min-h-11 flex-1 basis-52"
+          />
+          <button type="submit" className="btn-primary min-h-11 px-4">
+            <Plus className="h-4 w-4" /> Add Item
+          </button>
+          <button
+            type="button"
+            onClick={startVoice}
+            aria-label="Add item by voice"
+            aria-pressed={listening}
+            className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl border transition-all active:scale-95 ${
+              listening
+                ? "animate-pulse border-primary bg-primary text-primary-foreground"
+                : "hover:bg-secondary"
+            }`}
+          >
+            {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+          </button>
+        </form>
+
+        {(listening || voiceNote) && (
+          <p className="tab-enter mt-2 text-xs text-muted-foreground">
+            {listening ? "Listening… say one item, e.g. “dahi”." : voiceNote}
+          </p>
+        )}
+
+
+        <div className="mt-5 grid gap-4 sm:grid-cols-2">
+          <label className="block">
+            <span className="mb-1 block text-xs font-medium text-muted-foreground">
+              Serving for {servings} people
+            </span>
+            <input
+              type="range"
+              min={1}
+              max={10}
+              value={servings}
+              onChange={(e) => setServings(Number(e.target.value))}
+              className="w-full accent-[var(--primary)]"
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-xs font-medium text-muted-foreground">
+              Max cooking time: {maxMinutes} min
+            </span>
+            <input
+              type="range"
+              min={10}
+              max={45}
+              step={5}
+              value={maxMinutes}
+              onChange={(e) => setMaxMinutes(Number(e.target.value))}
+              className="w-full accent-[var(--primary)]"
+            />
+          </label>
+        </div>
+
+        <div className="mt-5 flex flex-wrap gap-3">
+          <button onClick={cook} className="btn-primary">
+            <Sparkles className="h-4 w-4" /> Suggest recipes
+          </button>
+          <button onClick={reset} className="btn-ghost">
+            <RotateCcw className="h-4 w-4" /> Reset
+          </button>
+        </div>
+      </div>
+
+      {!matches ? (
+        <EmptyState
+          icon={<ChefHat className="h-6 w-6" />}
+          title="No suggestions yet"
+          text="Pick your leftovers above and tap “Suggest recipes” for step-by-step desi dishes with cost per serving."
+        />
+      ) : matches.length === 0 ? (
+        <EmptyState
+          icon={<ChefHat className="h-6 w-6" />}
+          title="Nothing matches those limits"
+          text="Try selecting a few more leftovers or increasing the maximum cooking time."
+        />
+      ) : (
+        <div className="tab-enter grid gap-4 md:grid-cols-2">
+          {matches.map((r) => {
+            const open = openId === r.id;
+            const cost = (r.costPkr / r.serves) * servings;
+            return (
+              <article
+                key={r.id}
+                className="overflow-hidden rounded-2xl border bg-card shadow-sm transition-shadow hover:shadow-md"
+              >
+                <div className="p-5">
+                  <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+                    <div className="min-w-0">
+                      <h3 className="truncate text-base font-semibold">{r.name}</h3>
+                      <p className="text-sm text-muted-foreground">{r.urdu}</p>
+                    </div>
+                    <span className="shrink-0 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
+                      {Math.round(r.score * 100)}% match
+                    </span>
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted-foreground">
+                    <span className="inline-flex items-center gap-1">
+                      <Clock className="h-3.5 w-3.5" /> {r.minutes} min
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <Users className="h-3.5 w-3.5" /> {servings} servings
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <Wallet className="h-3.5 w-3.5" /> ~{pkr(cost)} total
+                    </span>
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {r.matched.map((m) => (
+                      <span
+                        key={m}
+                        className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary"
+                      >
+                        {m}
+                      </span>
+                    ))}
+                    {r.missing.map((m) => (
+                      <span
+                        key={m}
+                        className="rounded-full bg-secondary px-2 py-0.5 text-xs text-muted-foreground"
+                      >
+                        need: {m}
+                      </span>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={() => setOpenId(open ? null : r.id)}
+                    className="mt-4 text-sm font-semibold text-primary hover:underline"
+                  >
+                    {open ? "Hide method" : "Show method"}
+                  </button>
+
+                  {open && (
+                    <div className="tab-enter mt-3 space-y-3 border-t pt-3">
+                      <p className="text-xs text-muted-foreground">
+                        Pantry needed: {r.pantry.join(", ")}
+                      </p>
+                      <ol className="space-y-2 text-sm">
+                        {r.steps.map((s, i) => (
+                          <li key={s} className="flex gap-3">
+                            <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground">
+                              {i + 1}
+                            </span>
+                            <span>{s}</span>
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  )}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
