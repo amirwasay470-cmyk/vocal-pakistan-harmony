@@ -43,8 +43,23 @@ export function RecipeMaker() {
   const [matches, setMatches] = useState<Match[] | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [pantry, setPantry] = useState<string[]>(["roti", "daal", "rice", "salan"]);
+  const [cooked, setCooked] = useState<string[]>([]);
 
   const allChips = [...ingredients, ...custom];
+  const remixMatches = remixFor(pantry);
+  const savings = weeklySavings(pantry, cooked);
+
+  const togglePantry = (id: string) => {
+    const item = pantryGrid.find((p) => p.id === id)!;
+    setPantry((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
+    setSelected((s) =>
+      s.includes(item.match) ? s.filter((x) => x !== item.match) : [...s, item.match],
+    );
+  };
+
+  const toggleCooked = (id: string) =>
+    setCooked((c) => (c.includes(id) ? c.filter((x) => x !== id) : [...c, id]));
 
   const toggle = (item: string) =>
     setSelected((s) => (s.includes(item) ? s.filter((i) => i !== item) : [...s, item]));
