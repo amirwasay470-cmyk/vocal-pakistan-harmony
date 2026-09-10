@@ -13,9 +13,14 @@ import {
   ListChecks,
   Trash2,
   Route,
+  TrendingUp,
+  TrendingDown,
+  Minus as MinusIcon,
+  LineChart,
 } from "lucide-react";
 import { cities, groceries, pkr, type City } from "@/lib/awaaz-data";
 import { buildPriceCard, routingAdvice, type PriceCard } from "@/lib/awaaz-market";
+import { cityMarkets, essentialsBoard } from "@/lib/awaaz-trends";
 import { SectionHead, EmptyState, Stat } from "./BillAudit";
 
 type ListEntry = { key: string; name: string; qty: number; card: PriceCard };
@@ -24,11 +29,16 @@ const starters = ["Atta", "Sugar", "Tomatoes", "Dahi (Yogurt)", "Cooking Oil", "
 
 export function MarketFinder() {
   const [city, setCity] = useState<City>("Karachi");
-  const [view, setView] = useState<"compare" | "list">("compare");
+  const [view, setView] = useState<"compare" | "bazaar" | "list">("compare");
   const [query, setQuery] = useState("");
   const [cards, setCards] = useState<PriceCard[]>([]);
   const [list, setList] = useState<ListEntry[]>([]);
   const [reported, setReported] = useState<Record<string, string>>({});
+  const [marketId, setMarketId] = useState(cityMarkets["Karachi"][0]!.id);
+
+  const markets = cityMarkets[city];
+  const market = markets.find((m) => m.id === marketId) ?? markets[0]!;
+  const board = essentialsBoard(city, market);
 
   const search = (raw: string) => {
     const term = raw.trim();
@@ -94,7 +104,8 @@ export function MarketFinder() {
         {(
           [
             { id: "compare", label: "Compare Prices", icon: Search },
-            { id: "list", label: `My Shopping List${list.length ? ` (${list.length})` : ""}`, icon: ListChecks },
+            { id: "bazaar", label: "Bazaar Tracker", icon: LineChart },
+            { id: "list", label: `My List${list.length ? ` (${list.length})` : ""}`, icon: ListChecks },
           ] as const
         ).map((t) => {
           const Icon = t.icon;
@@ -267,6 +278,88 @@ export function MarketFinder() {
               })}
             </div>
           )}
+        </div>
+      ) : view === "bazaar" ? (
+        <div className="tab-enter space-y-4">
+          <div className="rounded-2xl border bg-card p-5 shadow-sm">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block">
+                <span className="mb-1 block text-xs font-medium text-muted-foreground">City</span>
+                <select
+                  value={city}
+                  onChange={(e) => {
+                    const c = e.target.value as City;
+                    setCity(c);
+                    setMarketId(cityMarkets[c][0]!.id);
+                    setCards((prev) => prev.map((p) => buildPriceCard(p.name, c)));
+                  }}
+                  className="input-base min-h-11"
+                >
+                  {cities.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-xs font-medium text-muted-foreground">Market</span>
+                <select
+                  value={market.id}
+                  onChange={(e) => setMarketId(e.target.value)}
+                  className="input-base min-h-11"
+                >
+                  {markets.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name} — {m.kind}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border bg-card p-5 shadow-sm">
+            <h3 className="mb-1 flex items-center gap-2 text-base font-semibold">
+              <LineChart className="h-4 w-4 text-primary" /> Essentials board · {market.name}
+            </h3>
+            <p className="mb-4 text-xs text-muted-foreground">
+              Green means cheaper than last week — a good week to stock up. Red means hold off.
+            </p>
+            <div className="space-y-2">
+              {board.map((row) => {
+                const up = row.trend.direction === "up";
+                const down = row.trend.direction === "down";
+                return (
+                  <div
+                    key={row.id}
+                    className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-xl border bg-surface/50 p-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">{row.name}</p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {row.urdu} · {row.unit} · last week {pkr(row.lastWeek)}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-3">
+                      <span className={up ? "trend-up" : down ? "trend-down" : "trend-flat"}>
+                        {up ? (
+                          <TrendingUp className="h-3.5 w-3.5" />
+                        ) : down ? (
+                          <TrendingDown className="h-3.5 w-3.5" />
+                        ) : (
+                          <MinusIcon className="h-3.5 w-3.5" />
+                        )}
+                        {row.trend.pct > 0 ? "+" : ""}
+                        {row.trend.pct}%
+                      </span>
+                      <span className="w-20 text-right text-sm font-bold">{pkr(row.price)}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       ) : list.length === 0 ? (
         <EmptyState

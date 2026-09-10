@@ -140,6 +140,101 @@ export function RecipeMaker() {
         subtitle="Turn last night's baqiya khana into a fresh meal instead of throwing it away."
       />
 
+      <div className="neon-card p-5">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+          <div className="min-w-0">
+            <p className="eyebrow">Jugaad Kitchen</p>
+            <h3 className="text-base font-semibold">Tap what's lying in the pantry</h3>
+            <p className="text-xs text-muted-foreground">
+              Roti, daal, chawal, salan — tap the tiles and we'll remix them into a new meal.
+            </p>
+          </div>
+          <span className="status-badge shrink-0">
+            <Flame className="h-3.5 w-3.5" /> {pantry.length} selected
+          </span>
+        </div>
+
+        <div className="mt-4 grid grid-cols-3 gap-2.5 sm:grid-cols-4 md:grid-cols-8">
+          {pantryGrid.map((p) => {
+            const on = pantry.includes(p.id);
+            return (
+              <button
+                key={p.id}
+                onClick={() => togglePantry(p.id)}
+                aria-pressed={on}
+                className={`pantry-tile ${on ? "pantry-tile-active" : ""}`}
+              >
+                <span className="text-2xl leading-none">{p.emoji}</span>
+                <span className="text-xs font-semibold">{p.name}</span>
+                <span className="text-[10px] text-muted-foreground">{p.urdu}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <Stat label="Food rescued / week" value={pkr(savings.potential)} />
+          <Stat label="Banked from remixes" value={pkr(savings.banked)} accent />
+          <Stat label="That's a month" value={pkr(savings.monthly)} />
+        </div>
+      </div>
+
+      {remixMatches.length > 0 && (
+        <div className="rounded-2xl border bg-card p-5 shadow-sm">
+          <h3 className="mb-1 flex items-center gap-2 text-base font-semibold">
+            <PiggyBank className="h-4 w-4 text-primary" /> Desi Remix
+          </h3>
+          <p className="mb-4 text-xs text-muted-foreground">
+            Second-life ideas for exactly what you tapped. Mark one “cooked” to bank the saving.
+          </p>
+          <div className="grid gap-3 md:grid-cols-2">
+            {remixMatches.slice(0, 6).map((r) => {
+              const done = cooked.includes(r.id);
+              return (
+                <div
+                  key={r.id}
+                  className={`rounded-xl border p-4 transition-all ${
+                    done ? "border-primary/60 bg-primary/8" : "bg-surface/50"
+                  }`}
+                >
+                  <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold">
+                        {r.emoji} {r.title}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">{r.urdu}</p>
+                    </div>
+                    <span className="status-badge shrink-0">saves {pkr(r.savesPkr)}</span>
+                  </div>
+                  <p className="mt-2 text-sm">{r.idea}</p>
+                  <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                    <span className="inline-flex items-center gap-1">
+                      <Clock className="h-3.5 w-3.5" /> {r.minutes} min
+                    </span>
+                    {r.missing.map((m) => (
+                      <span key={m} className="warn-badge">
+                        need: {m}
+                      </span>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => toggleCooked(r.id)}
+                    className={`mt-3 min-h-10 w-full rounded-xl text-sm font-semibold transition-all active:scale-[0.98] ${
+                      done
+                        ? "bg-primary text-primary-foreground"
+                        : "border bg-card hover:bg-secondary"
+                    }`}
+                  >
+                    {done ? "Cooked — saving banked" : "I cooked this"}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+
       <div className="rounded-2xl border bg-card p-5 shadow-sm">
         <h3 className="mb-3 text-base font-semibold">What's left in the fridge?</h3>
         <div className="flex flex-wrap gap-2">

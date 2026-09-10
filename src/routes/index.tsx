@@ -89,8 +89,8 @@ function Index() {
         Awaaz-e-Pakistan · Sample rates and tariffs are indicative and for guidance only.
       </footer>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 border-t bg-card/95 backdrop-blur md:hidden">
-        <div className="grid grid-cols-3">
+      <nav className="fixed inset-x-0 bottom-4 z-40 flex justify-center px-4 md:hidden">
+        <div className="floating-nav grid w-full max-w-sm grid-cols-3 gap-1 p-1.5">
           {tabs.map((t) => {
             const Icon = t.icon;
             const active = tab === t.id;
@@ -99,17 +99,11 @@ function Index() {
                 key={t.id}
                 onClick={() => setTab(t.id)}
                 aria-current={active ? "page" : undefined}
-                className={`flex flex-col items-center gap-1 py-2.5 text-[11px] font-semibold transition-colors ${
-                  active ? "text-primary" : "text-muted-foreground"
+                className={`flex flex-col items-center gap-0.5 rounded-full py-2 text-[11px] font-semibold transition-all active:scale-95 ${
+                  active ? "nav-pill-active" : "text-muted-foreground"
                 }`}
               >
-                <span
-                  className={`grid h-8 w-14 place-items-center rounded-full transition-colors ${
-                    active ? "bg-primary/12" : ""
-                  }`}
-                >
-                  <Icon className="h-5 w-5" />
-                </span>
+                <Icon className="h-5 w-5" />
                 {t.short}
               </button>
             );
