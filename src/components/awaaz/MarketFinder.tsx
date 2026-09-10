@@ -13,9 +13,14 @@ import {
   ListChecks,
   Trash2,
   Route,
+  TrendingUp,
+  TrendingDown,
+  Minus as MinusIcon,
+  LineChart,
 } from "lucide-react";
 import { cities, groceries, pkr, type City } from "@/lib/awaaz-data";
 import { buildPriceCard, routingAdvice, type PriceCard } from "@/lib/awaaz-market";
+import { cityMarkets, essentialsBoard } from "@/lib/awaaz-trends";
 import { SectionHead, EmptyState, Stat } from "./BillAudit";
 
 type ListEntry = { key: string; name: string; qty: number; card: PriceCard };
@@ -24,11 +29,16 @@ const starters = ["Atta", "Sugar", "Tomatoes", "Dahi (Yogurt)", "Cooking Oil", "
 
 export function MarketFinder() {
   const [city, setCity] = useState<City>("Karachi");
-  const [view, setView] = useState<"compare" | "list">("compare");
+  const [view, setView] = useState<"compare" | "bazaar" | "list">("compare");
   const [query, setQuery] = useState("");
   const [cards, setCards] = useState<PriceCard[]>([]);
   const [list, setList] = useState<ListEntry[]>([]);
   const [reported, setReported] = useState<Record<string, string>>({});
+  const [marketId, setMarketId] = useState(cityMarkets["Karachi"][0]!.id);
+
+  const markets = cityMarkets[city];
+  const market = markets.find((m) => m.id === marketId) ?? markets[0]!;
+  const board = essentialsBoard(city, market);
 
   const search = (raw: string) => {
     const term = raw.trim();
