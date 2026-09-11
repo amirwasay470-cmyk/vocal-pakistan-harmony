@@ -41,6 +41,7 @@ import {
 } from "@/lib/awaaz-household";
 import { BillScanner } from "@/components/awaaz/BillScanner";
 import type { BillScan } from "@/lib/bill-scan.functions";
+import type { AdvisorContext } from "@/lib/advisor-engine";
 
 type Result = {
   billedUnits: number;
@@ -59,7 +60,7 @@ type Result = {
   budget: BudgetVerdict;
 };
 
-export function BillAudit() {
+export function BillAudit({ onContextChange }: { onContextChange?: (ctx: AdvisorContext) => void }) {
   const [appliances, setAppliances] = useState<Appliance[]>(defaultAppliances);
   const [preset, setPreset] = useState<PresetId | null>(null);
   const [discoId, setDiscoId] = useState("k-electric");
@@ -193,6 +194,56 @@ export function BillAudit() {
     audit();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingAudit]);
+
+  // Report live context to the Energy Advisor
+  useEffect(() => {
+    if (!onContextChange) return;
+    const lifeline = lifelineStatus(billedUnits);
+    const activeStandby = standby.filter((d) => d.qty > 0);
+    const marginalRate =
+      slabBreakdownFor(billedUnits, disco.slabs).at(-1)?.rate ?? disco.slabs[0]!.rate;
+    const vampire = calculateVampire(activeStandby, marginalRate * (1 + disco.taxRate));
+    const estimatedUnits = appliances.reduce(
+      (s, a) => s + (a.watts * a.hours * a.qty * 30) / 1000,
+      0,
+    );
+    const slabRows = slabBreakdownFor(billedUnits, disco.slabs);
+    const energyCost = slabRows.reduce((s, r) => s + r.amount, 0);
+    const total = energyCost * (1 + disco.taxRate) + disco.fixedCharges;
+    const perAppliance = appliances
+      .map((a) => {
+        const units = (a.watts * a.hours * a.qty * 30) / 1000;
+        return {
+          name: a.name,
+          units,
+          cost: units * marginalRate * 1.29,
+          share: estimatedUnits ? (units / estimatedUnits) * 100 : 0,
+          tip: a.tip,
+        };
+      })
+      .sort((a, b) => b.units - a.units);
+    const top3 = perAppliance.slice(0, 3).reduce((s, p) => s + p.cost, 0);
+    const projected = result ? (solarType === "none" ? total : result.solar.billAfterSolar) : total;
+    onContextChange({
+      appliances,
+      disco,
+      billedUnits,
+      billAmount,
+      budget,
+      standby,
+      budgetVerdict: result?.budget ?? budgetGuard(projected, budget),
+      hasResult: result !== null,
+      estimatedUnits,
+      totalBill: result ? result.total : total,
+      savings: result?.savings ?? top3 * 0.22,
+      perAppliance,
+      lifelineTier: lifeline.tier,
+      unprotected: lifeline.tier === "unprotected",
+      unitsToNextTier: lifeline.unitsToNextTier,
+      vampireMonthlyCost: result?.vampire.monthlyCost ?? vampire.monthlyCost,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [appliances, discoId, billedUnits, billAmount, budget, standby, result]);
 
   return (
     <div className="tab-enter space-y-6">

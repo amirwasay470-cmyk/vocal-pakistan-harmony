@@ -4,6 +4,8 @@ import { Zap, ChefHat, ShoppingBasket, Megaphone } from "lucide-react";
 import { BillAudit } from "@/components/awaaz/BillAudit";
 import { RecipeMaker } from "@/components/awaaz/RecipeMaker";
 import { MarketFinder } from "@/components/awaaz/MarketFinder";
+import { EnergyAdvisor } from "@/components/awaaz/EnergyAdvisor";
+import type { AdvisorContext } from "@/lib/advisor-engine";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -37,6 +39,8 @@ type TabId = (typeof tabs)[number]["id"];
 
 function Index() {
   const [tab, setTab] = useState<TabId>("bills");
+  const [advisorCtx, setAdvisorCtx] = useState<AdvisorContext | null>(null);
+  const [advisorMode, setAdvisorMode] = useState<"floating" | "embedded">("floating");
 
   return (
     <div className="min-h-screen bg-background pb-24 md:pb-0">
@@ -80,7 +84,31 @@ function Index() {
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-6">
-        {tab === "bills" && <BillAudit key="bills" />}
+        {tab === "bills" && (
+          <div className="space-y-6">
+            <BillAudit key="bills" onContextChange={setAdvisorCtx} />
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold">AI Energy Advisor</h2>
+              <div className="flex gap-1 rounded-xl border border-border bg-card p-1">
+                <button
+                  onClick={() => setAdvisorMode("floating")}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${advisorMode === "floating" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+                >
+                  Floating
+                </button>
+                <button
+                  onClick={() => setAdvisorMode("embedded")}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${advisorMode === "embedded" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+                >
+                  Embedded
+                </button>
+              </div>
+            </div>
+            {advisorMode === "embedded" && (
+              <EnergyAdvisor context={advisorCtx} mode="embedded" />
+            )}
+          </div>
+        )}
         {tab === "recipes" && <RecipeMaker key="recipes" />}
         {tab === "market" && <MarketFinder key="market" />}
       </main>
@@ -88,6 +116,10 @@ function Index() {
       <footer className="hidden border-t py-6 text-center text-xs text-muted-foreground md:block">
         Awaaz-e-Pakistan · Sample rates and tariffs are indicative and for guidance only.
       </footer>
+
+      {advisorMode === "floating" && tab === "bills" && (
+        <EnergyAdvisor context={advisorCtx} mode="floating" />
+      )}
 
       <nav className="fixed inset-x-0 bottom-4 z-40 flex justify-center px-4 md:hidden">
         <div className="floating-nav grid w-full max-w-sm grid-cols-3 gap-1 p-1.5">

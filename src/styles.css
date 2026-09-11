@@ -39,6 +39,7 @@
   --color-danger: var(--danger);
   --font-display: "Poppins", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-urdu: "Noto Nastaliq Urdu", "Inter", ui-serif, serif;
 }
 
 :root {
@@ -329,4 +330,8 @@
   font-size: 0.68rem;
   font-weight: 700;
   padding: 0.3rem 0.55rem;
+}
+
+@utility font-urdu {
+  font-family: var(--font-urdu);
 }
