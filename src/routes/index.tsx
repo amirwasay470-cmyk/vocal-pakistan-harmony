@@ -1,26 +1,28 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Zap, ChefHat, ShoppingBasket, Megaphone } from "lucide-react";
+import { Zap, ChefHat, ShoppingBasket, Megaphone, Sun, Ghost } from "lucide-react";
 import { BillAudit } from "@/components/awaaz/BillAudit";
 import { RecipeMaker } from "@/components/awaaz/RecipeMaker";
 import { MarketFinder } from "@/components/awaaz/MarketFinder";
 import { EnergyAdvisor } from "@/components/awaaz/EnergyAdvisor";
+import { SolarCalculator } from "@/components/awaaz/SolarCalculator";
+import { VampireDetector } from "@/components/awaaz/VampireDetector";
 import type { AdvisorContext } from "@/lib/advisor-engine";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Awaaz-e-Pakistan — Bills, Leftovers & Market Prices" },
+      { title: "Awaaz-e-Pakistan — Bills, Solar, Vampire Load & Market Prices" },
       {
         name: "description",
         content:
-          "Audit your electricity bill, cook smart meals from leftovers, and compare local market grocery prices across Pakistani cities.",
+          "Audit your electricity bill, size a solar system, detect vampire power drain, cook smart meals from leftovers, and compare local market grocery prices across Pakistani cities.",
       },
-      { property: "og:title", content: "Awaaz-e-Pakistan — Save on bills, food and groceries" },
+      { property: "og:title", content: "Awaaz-e-Pakistan — Save on bills, solar, food and groceries" },
       {
         property: "og:description",
         content:
-          "A household toolkit for Pakistan: bill audit and appliance coach, leftover recipe maker, and market grocery value finder.",
+          "A household toolkit for Pakistan: bill audit, solar calculator, vampire load detector, leftover recipe maker, and market grocery value finder.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -31,6 +33,8 @@ export const Route = createFileRoute("/")({
 
 const tabs = [
   { id: "bills", label: "Bill Audit", short: "Bills", icon: Zap },
+  { id: "solar", label: "Solar Calculator", short: "Solar", icon: Sun },
+  { id: "vampire", label: "Vampire Load", short: "Vampire", icon: Ghost },
   { id: "recipes", label: "Leftover Recipes", short: "Recipes", icon: ChefHat },
   { id: "market", label: "Market Value", short: "Market", icon: ShoppingBasket },
 ] as const;
@@ -41,6 +45,11 @@ function Index() {
   const [tab, setTab] = useState<TabId>("bills");
   const [advisorCtx, setAdvisorCtx] = useState<AdvisorContext | null>(null);
   const [advisorMode, setAdvisorMode] = useState<"floating" | "embedded">("floating");
+
+  const liveUnits = advisorCtx?.billedUnits ?? 412;
+  const liveDiscoId = advisorCtx?.disco.id ?? "k-electric";
+  const liveEstimatedUnits = advisorCtx?.estimatedUnits ?? 0;
+  const liveAppliances = advisorCtx?.appliances ?? [];
 
   return (
     <div className="min-h-screen bg-background pb-24 md:pb-0">
@@ -53,7 +62,7 @@ function Index() {
             <div className="min-w-0">
               <h1 className="truncate text-lg font-bold tracking-tight">Awaaz-e-Pakistan</h1>
               <p className="truncate text-xs text-muted-foreground">
-                Har ghar ki bachat — bills, khana, bazaar
+                Har ghar ki bachat — bills, solar, bazaar
               </p>
             </div>
           </div>
@@ -109,6 +118,18 @@ function Index() {
             )}
           </div>
         )}
+        {tab === "solar" && (
+          <SolarCalculator key="solar" monthlyUnits={liveUnits} discoId={liveDiscoId} />
+        )}
+        {tab === "vampire" && (
+          <VampireDetector
+            key="vampire"
+            billedUnits={liveUnits}
+            estimatedUnits={liveEstimatedUnits}
+            discoId={liveDiscoId}
+            appliances={liveAppliances}
+          />
+        )}
         {tab === "recipes" && <RecipeMaker key="recipes" />}
         {tab === "market" && <MarketFinder key="market" />}
       </main>
@@ -122,7 +143,7 @@ function Index() {
       )}
 
       <nav className="fixed inset-x-0 bottom-4 z-40 flex justify-center px-4 md:hidden">
-        <div className="floating-nav grid w-full max-w-sm grid-cols-3 gap-1 p-1.5">
+        <div className="floating-nav grid w-full max-w-md grid-cols-5 gap-1 p-1.5">
           {tabs.map((t) => {
             const Icon = t.icon;
             const active = tab === t.id;
@@ -131,11 +152,11 @@ function Index() {
                 key={t.id}
                 onClick={() => setTab(t.id)}
                 aria-current={active ? "page" : undefined}
-                className={`flex flex-col items-center gap-0.5 rounded-full py-2 text-[11px] font-semibold transition-all active:scale-95 ${
+                className={`flex flex-col items-center gap-0.5 rounded-full py-1.5 text-[10px] font-semibold transition-all active:scale-95 ${
                   active ? "nav-pill-active" : "text-muted-foreground"
                 }`}
               >
-                <Icon className="h-5 w-5" />
+                <Icon className="h-4 w-4" />
                 {t.short}
               </button>
             );
