@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Zap,
   Calculator,
@@ -73,9 +73,11 @@ export function BillAudit() {
   const [result, setResult] = useState<Result | null>(null);
   const [scannedTaxes, setScannedTaxes] = useState<number | null>(null);
   const [scannedSlab, setScannedSlab] = useState<string | null>(null);
+  const [pendingAudit, setPendingAudit] = useState(false);
+  const resultsRef = useRef<HTMLDivElement>(null);
   const disco = discos.find((item) => item.id === discoId) ?? discos[0]!;
 
-  const applyScan = (scan: BillScan) => {
+  const applyScan = (scan: BillScan, scroll = false) => {
     if (scan.units !== null && scan.units > 0) {
       setBilledUnits(Math.round(scan.units));
       setPreset(null);
@@ -88,7 +90,14 @@ export function BillAudit() {
       const match = discos.find((d) => key.includes(d.id.replace(/[^a-z]/g, "")));
       if (match) setDiscoId(match.id);
     }
-    setResult(null);
+    // Run the full slab-wise audit as soon as the new values are committed.
+    setPendingAudit(true);
+    if (scroll) {
+      window.setTimeout(
+        () => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
+        120,
+      );
+    }
   };
 
   const update = (id: string, field: "watts" | "hours" | "qty", value: number) => {
