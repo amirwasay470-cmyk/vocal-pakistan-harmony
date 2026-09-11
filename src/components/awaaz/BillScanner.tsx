@@ -1,6 +1,15 @@
 import { useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Camera, Upload, ScanLine, LoaderCircle, CircleCheck as CheckCircle2, TriangleAlert as AlertTriangle, X } from "lucide-react";
+import {
+  Camera,
+  Upload,
+  ScanLine,
+  LoaderCircle,
+  ArrowDownToLine,
+  CircleCheck as CheckCircle2,
+  TriangleAlert as AlertTriangle,
+  X,
+} from "lucide-react";
 import { scanBill, type BillScan } from "@/lib/bill-scan.functions";
 
 async function toCompressedDataUrl(file: File): Promise<string> {
@@ -17,7 +26,13 @@ async function toCompressedDataUrl(file: File): Promise<string> {
   return canvas.toDataURL("image/jpeg", 0.82);
 }
 
-export function BillScanner({ onExtract }: { onExtract: (scan: BillScan) => void }) {
+export function BillScanner({
+  onExtract,
+  onApply,
+}: {
+  onExtract: (scan: BillScan) => void;
+  onApply?: (scan: BillScan) => void;
+}) {
   const run = useServerFn(scanBill);
   const uploadRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
@@ -123,7 +138,7 @@ export function BillScanner({ onExtract }: { onExtract: (scan: BillScan) => void
       {scan && !error && (
         <div className="tab-enter mt-3 rounded-xl border border-primary/40 bg-primary/10 p-3 text-sm">
           <p className="flex items-center gap-2 font-semibold text-primary">
-            <CheckCircle2 className="h-4 w-4" /> Bill read successfully
+            <CheckCircle2 className="h-4 w-4" /> Bill read and filled in for you
           </p>
           <ul className="mt-2 grid gap-1 text-xs sm:grid-cols-2">
             <li>Units: {scan.units ?? "not found"}</li>
@@ -134,8 +149,16 @@ export function BillScanner({ onExtract }: { onExtract: (scan: BillScan) => void
             <li>Month: {scan.month ?? "not found"}</li>
           </ul>
           {scan.notes && <p className="mt-2 text-xs text-muted-foreground">{scan.notes}</p>}
+          <button
+            type="button"
+            onClick={() => onApply?.(scan)}
+            className="btn-primary mt-3 w-full justify-center"
+          >
+            <ArrowDownToLine className="h-4 w-4" /> Apply to Bill Audit
+          </button>
           <p className="mt-2 text-xs text-muted-foreground">
-            Please double-check the filled numbers against your paper bill.
+            The audit has already run with these numbers — tap above to jump to the slab-wise
+            results, and double-check them against your paper bill.
           </p>
         </div>
       )}
