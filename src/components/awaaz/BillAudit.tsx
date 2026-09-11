@@ -186,6 +186,14 @@ export function BillAudit() {
     });
   };
 
+  // Runs after the scanned values are committed to state.
+  useEffect(() => {
+    if (!pendingAudit) return;
+    setPendingAudit(false);
+    audit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingAudit]);
+
   return (
     <div className="tab-enter space-y-6">
       <SectionHead
@@ -284,7 +292,10 @@ export function BillAudit() {
             </Field>
           </div>
 
-          <BillScanner onExtract={applyScan} />
+          <BillScanner
+            onExtract={(scan) => applyScan(scan)}
+            onApply={(scan) => applyScan(scan, true)}
+          />
 
           {scannedTaxes !== null && (
             <p className="mt-3 rounded-xl bg-warning/10 p-3 text-xs">
@@ -418,7 +429,7 @@ export function BillAudit() {
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div ref={resultsRef} className="scroll-mt-20 space-y-4">
           {!result ? (
             <EmptyState
               icon={<Zap className="h-6 w-6" />}
