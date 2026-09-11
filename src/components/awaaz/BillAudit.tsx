@@ -123,6 +123,8 @@ export function BillAudit() {
     setSystemKw(5);
     setBatteryKwh(10);
     setStandby(defaultStandbyDevices);
+    setScannedTaxes(null);
+    setScannedSlab(null);
     setResult(null);
   };
 
