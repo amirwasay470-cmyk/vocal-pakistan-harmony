@@ -39,6 +39,8 @@ import {
   type StandbyDevice,
   type VampireResult,
 } from "@/lib/awaaz-household";
+import { BillScanner } from "@/components/awaaz/BillScanner";
+import type { BillScan } from "@/lib/bill-scan.functions";
 
 type Result = {
   billedUnits: number;
@@ -69,7 +71,25 @@ export function BillAudit() {
   const [batteryKwh, setBatteryKwh] = useState(10);
   const [standby, setStandby] = useState<StandbyDevice[]>(defaultStandbyDevices);
   const [result, setResult] = useState<Result | null>(null);
+  const [scannedTaxes, setScannedTaxes] = useState<number | null>(null);
+  const [scannedSlab, setScannedSlab] = useState<string | null>(null);
   const disco = discos.find((item) => item.id === discoId) ?? discos[0]!;
+
+  const applyScan = (scan: BillScan) => {
+    if (scan.units !== null && scan.units > 0) {
+      setBilledUnits(Math.round(scan.units));
+      setPreset(null);
+    }
+    if (scan.billAmount !== null && scan.billAmount > 0) setBillAmount(Math.round(scan.billAmount));
+    setScannedTaxes(scan.taxes !== null && scan.taxes > 0 ? scan.taxes : null);
+    setScannedSlab(scan.slab);
+    if (scan.disco) {
+      const key = scan.disco.toLowerCase().replace(/[^a-z]/g, "");
+      const match = discos.find((d) => key.includes(d.id.replace(/[^a-z]/g, "")));
+      if (match) setDiscoId(match.id);
+    }
+    setResult(null);
+  };
 
   const update = (id: string, field: "watts" | "hours" | "qty", value: number) => {
     setPreset(null);
@@ -103,6 +123,8 @@ export function BillAudit() {
     setSystemKw(5);
     setBatteryKwh(10);
     setStandby(defaultStandbyDevices);
+    setScannedTaxes(null);
+    setScannedSlab(null);
     setResult(null);
   };
 
@@ -252,6 +274,15 @@ export function BillAudit() {
               />
             </Field>
           </div>
+
+          <BillScanner onExtract={applyScan} />
+
+          {scannedTaxes !== null && (
+            <p className="mt-3 rounded-xl bg-warning/10 p-3 text-xs">
+              Taxes printed on your bill: {pkr(scannedTaxes)}
+              {scannedSlab ? ` · Tariff slab on bill: ${scannedSlab}` : ""}
+            </p>
+          )}
 
           <LifelineIndicator units={billedUnits} />
 
