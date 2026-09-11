@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Zap, ChefHat, ShoppingBasket, Megaphone, Sun, Ghost } from "lucide-react";
+import { Zap, ChefHat, ShoppingBasket, Megaphone, Sun } from "lucide-react";
 import { BillAudit } from "@/components/awaaz/BillAudit";
 import { RecipeMaker } from "@/components/awaaz/RecipeMaker";
 import { MarketFinder } from "@/components/awaaz/MarketFinder";
@@ -12,17 +12,17 @@ import type { AdvisorContext } from "@/lib/advisor-engine";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Awaaz-e-Pakistan — Bills, Solar, Vampire Load & Market Prices" },
+      { title: "Awaaz-e-Pakistan — Bills, Solar & Energy Optimizer, Market Prices" },
       {
         name: "description",
         content:
-          "Audit your electricity bill, size a solar system, detect vampire power drain, cook smart meals from leftovers, and compare local market grocery prices across Pakistani cities.",
+          "Audit your electricity bill, size a solar system, detect vampire power drain and meter anomalies, cook smart meals from leftovers, and compare local market grocery prices across Pakistani cities.",
       },
       { property: "og:title", content: "Awaaz-e-Pakistan — Save on bills, solar, food and groceries" },
       {
         property: "og:description",
         content:
-          "A household toolkit for Pakistan: bill audit, solar calculator, vampire load detector, leftover recipe maker, and market grocery value finder.",
+          "A household toolkit for Pakistan: bill audit, solar & energy optimizer with vampire load detector, leftover recipe maker, and market grocery value finder.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -33,8 +33,7 @@ export const Route = createFileRoute("/")({
 
 const tabs = [
   { id: "bills", label: "Bill Audit", short: "Bills", icon: Zap },
-  { id: "solar", label: "Solar Calculator", short: "Solar", icon: Sun },
-  { id: "vampire", label: "Vampire Load", short: "Vampire", icon: Ghost },
+  { id: "optimizer", label: "Solar & Energy Optimizer", short: "Optimizer", icon: Sun },
   { id: "recipes", label: "Leftover Recipes", short: "Recipes", icon: ChefHat },
   { id: "market", label: "Market Value", short: "Market", icon: ShoppingBasket },
 ] as const;
@@ -118,17 +117,17 @@ function Index() {
             )}
           </div>
         )}
-        {tab === "solar" && (
-          <SolarCalculator key="solar" monthlyUnits={liveUnits} discoId={liveDiscoId} />
-        )}
-        {tab === "vampire" && (
-          <VampireDetector
-            key="vampire"
-            billedUnits={liveUnits}
-            estimatedUnits={liveEstimatedUnits}
-            discoId={liveDiscoId}
-            appliances={liveAppliances}
-          />
+        {tab === "optimizer" && (
+          <div key="optimizer" className="space-y-8">
+            <SolarCalculator monthlyUnits={liveUnits} discoId={liveDiscoId} />
+            <div className="border-t border-border/60" />
+            <VampireDetector
+              billedUnits={liveUnits}
+              estimatedUnits={liveEstimatedUnits}
+              discoId={liveDiscoId}
+              appliances={liveAppliances}
+            />
+          </div>
         )}
         {tab === "recipes" && <RecipeMaker key="recipes" />}
         {tab === "market" && <MarketFinder key="market" />}
@@ -143,7 +142,7 @@ function Index() {
       )}
 
       <nav className="fixed inset-x-0 bottom-4 z-40 flex justify-center px-4 md:hidden">
-        <div className="floating-nav grid w-full max-w-md grid-cols-5 gap-1 p-1.5">
+        <div className="floating-nav grid w-full max-w-md grid-cols-4 gap-1 p-1.5">
           {tabs.map((t) => {
             const Icon = t.icon;
             const active = tab === t.id;
