@@ -1,28 +1,24 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Zap, ChefHat, ShoppingBasket, Megaphone, Sun } from "lucide-react";
-import { BillAudit } from "@/components/awaaz/BillAudit";
-import { RecipeMaker } from "@/components/awaaz/RecipeMaker";
-import { MarketFinder } from "@/components/awaaz/MarketFinder";
-import { EnergyAdvisor } from "@/components/awaaz/EnergyAdvisor";
-import { SolarCalculator } from "@/components/awaaz/SolarCalculator";
-import { VampireDetector } from "@/components/awaaz/VampireDetector";
-import type { AdvisorContext } from "@/lib/advisor-engine";
+import { Gauge, Sliders, Swords, Megaphone } from "lucide-react";
+import { DashboardTab } from "@/components/awaaz/DashboardTab";
+import { ApplianceBudgeter } from "@/components/awaaz/ApplianceBudgeter";
+import { TariffWarRoom } from "@/components/awaaz/TariffWarRoom";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Awaaz-e-Pakistan — Bills, Solar & Energy Optimizer, Market Prices" },
+      { title: "Awaaz-e-Pakistan — Utility Bill Audit & Energy Optimization" },
       {
         name: "description",
         content:
-          "Audit your electricity bill, size a solar system, detect vampire power drain and meter anomalies, cook smart meals from leftovers, and compare local market grocery prices across Pakistani cities.",
+          "Audit your electricity bill, monitor slab danger zones, compare appliance costs, budget your usage, and demystify hidden tariff charges across Pakistani DISCOs.",
       },
-      { property: "og:title", content: "Awaaz-e-Pakistan — Save on bills, solar, food and groceries" },
+      { property: "og:title", content: "Awaaz-e-Pakistan — Bill Audit & Energy Optimizer" },
       {
         property: "og:description",
         content:
-          "A household toolkit for Pakistan: bill audit, solar & energy optimizer with vampire load detector, leftover recipe maker, and market grocery value finder.",
+          "A household energy toolkit for Pakistan: dual-bar appliance comparison, slab danger meter, appliance budgeter, and tariff war room.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -32,23 +28,15 @@ export const Route = createFileRoute("/")({
 });
 
 const tabs = [
-  { id: "bills", label: "Bill Audit", short: "Bills", icon: Zap },
-  { id: "optimizer", label: "Solar & Energy Optimizer", short: "Optimizer", icon: Sun },
-  { id: "recipes", label: "Leftover Recipes", short: "Recipes", icon: ChefHat },
-  { id: "market", label: "Market Value", short: "Market", icon: ShoppingBasket },
+  { id: "dashboard", label: "Dashboard", short: "Dashboard", icon: Gauge },
+  { id: "budgeter", label: "Appliance Budgeter", short: "Budgeter", icon: Sliders },
+  { id: "warroom", label: "Tariff War Room", short: "Tariff", icon: Swords },
 ] as const;
 
 type TabId = (typeof tabs)[number]["id"];
 
 function Index() {
-  const [tab, setTab] = useState<TabId>("bills");
-  const [advisorCtx, setAdvisorCtx] = useState<AdvisorContext | null>(null);
-  const [advisorMode, setAdvisorMode] = useState<"floating" | "embedded">("floating");
-
-  const liveUnits = advisorCtx?.billedUnits ?? 412;
-  const liveDiscoId = advisorCtx?.disco.id ?? "k-electric";
-  const liveEstimatedUnits = advisorCtx?.estimatedUnits ?? 0;
-  const liveAppliances = advisorCtx?.appliances ?? [];
+  const [tab, setTab] = useState<TabId>("dashboard");
 
   return (
     <div className="min-h-screen bg-background pb-24 md:pb-0">
@@ -61,7 +49,7 @@ function Index() {
             <div className="min-w-0">
               <h1 className="truncate text-lg font-bold tracking-tight">Awaaz-e-Pakistan</h1>
               <p className="truncate text-xs text-muted-foreground">
-                Har ghar ki bachat — bills, solar, bazaar
+                Har ghar ki bachat — bill audit & energy optimizer
               </p>
             </div>
           </div>
@@ -92,57 +80,17 @@ function Index() {
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-6">
-        {tab === "bills" && (
-          <div className="space-y-6">
-            <BillAudit key="bills" onContextChange={setAdvisorCtx} />
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold">AI Energy Advisor</h2>
-              <div className="flex gap-1 rounded-xl border border-border bg-card p-1">
-                <button
-                  onClick={() => setAdvisorMode("floating")}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${advisorMode === "floating" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
-                >
-                  Floating
-                </button>
-                <button
-                  onClick={() => setAdvisorMode("embedded")}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${advisorMode === "embedded" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
-                >
-                  Embedded
-                </button>
-              </div>
-            </div>
-            {advisorMode === "embedded" && (
-              <EnergyAdvisor context={advisorCtx} mode="embedded" />
-            )}
-          </div>
-        )}
-        {tab === "optimizer" && (
-          <div key="optimizer" className="space-y-8">
-            <SolarCalculator monthlyUnits={liveUnits} discoId={liveDiscoId} />
-            <div className="border-t border-border/60" />
-            <VampireDetector
-              billedUnits={liveUnits}
-              estimatedUnits={liveEstimatedUnits}
-              discoId={liveDiscoId}
-              appliances={liveAppliances}
-            />
-          </div>
-        )}
-        {tab === "recipes" && <RecipeMaker key="recipes" />}
-        {tab === "market" && <MarketFinder key="market" />}
+        {tab === "dashboard" && <DashboardTab key="dashboard" onNavigate={(t) => setTab(t as TabId)} />}
+        {tab === "budgeter" && <ApplianceBudgeter key="budgeter" />}
+        {tab === "warroom" && <TariffWarRoom key="warroom" />}
       </main>
 
       <footer className="hidden border-t py-6 text-center text-xs text-muted-foreground md:block">
         Awaaz-e-Pakistan · Sample rates and tariffs are indicative and for guidance only.
       </footer>
 
-      {advisorMode === "floating" && tab === "bills" && (
-        <EnergyAdvisor context={advisorCtx} mode="floating" />
-      )}
-
       <nav className="fixed inset-x-0 bottom-4 z-40 flex justify-center px-4 md:hidden">
-        <div className="floating-nav grid w-full max-w-md grid-cols-4 gap-1 p-1.5">
+        <div className="floating-nav grid w-full max-w-md grid-cols-3 gap-1 p-1.5">
           {tabs.map((t) => {
             const Icon = t.icon;
             const active = tab === t.id;
