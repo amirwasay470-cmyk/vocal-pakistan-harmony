@@ -24,7 +24,7 @@ import {
   lifelineStatus,
   type SlabStatus,
 } from "@/lib/awaaz-household";
-import { SectionHead, Field, Stat, EmptyState } from "@/components/awaaz/BillAudit";
+import { SectionHead, Field, Stat } from "@/components/awaaz/BillAudit";
 
 type DualBar = {
   appliance: Appliance;
