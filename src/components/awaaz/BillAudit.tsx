@@ -151,7 +151,7 @@ export function BillAudit({ onContextChange }: { onContextChange?: (ctx: Advisor
   const audit = () => {
     const per = appliances.map((a) => {
       const units = (a.watts * a.hours * a.qty * 30) / 1000;
-      return { name: a.name, units, tip: a.tip };
+      return { name: a.name, units, tip: a.tip, reduction: reductionFor(a.id) };
     });
     const estimatedUnits = per.reduce((s, p) => s + p.units, 0);
     const units = Math.max(billedUnits, 0);
