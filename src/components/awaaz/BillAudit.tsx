@@ -70,6 +70,20 @@ type Result = {
   budget: BudgetVerdict;
 };
 
+/** Realistic unit reduction per appliance if the household follows the Awaaz-e-Pakistan tips. */
+const reductionByAppliance: Record<string, number> = {
+  ac: 0.28,
+  fridge: 0.12,
+  fan: 0.35,
+  geyser: 0.4,
+  iron: 0.25,
+  lights: 0.5,
+  washing: 0.2,
+  tv: 0.3,
+};
+
+const reductionFor = (id: string) => reductionByAppliance[id] ?? 0.15;
+
 export function BillAudit({ onContextChange }: { onContextChange?: (ctx: AdvisorContext) => void }) {
   const [appliances, setAppliances] = useState<Appliance[]>(defaultAppliances);
   const [preset, setPreset] = useState<PresetId | null>(null);
