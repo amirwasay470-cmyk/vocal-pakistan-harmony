@@ -163,13 +163,20 @@ export function BillAudit({ onContextChange }: { onContextChange?: (ctx: Advisor
     const marginalRate = slabRows.at(-1)?.rate ?? disco.slabs[0]!.rate;
 
     const perAppliance = per
-      .map((p) => ({
-        name: p.name,
-        units: p.units,
-        cost: p.units * marginalRate * 1.29,
-        share: estimatedUnits ? (p.units / estimatedUnits) * 100 : 0,
-        tip: p.tip,
-      }))
+      .map((p) => {
+        const optimizedUnits = p.units * (1 - p.reduction);
+        return {
+          name: p.name,
+          units: p.units,
+          cost: p.units * marginalRate * 1.29,
+          share: estimatedUnits ? (p.units / estimatedUnits) * 100 : 0,
+          tip: p.tip,
+          optimizedUnits,
+          optimizedCost: optimizedUnits * marginalRate * 1.29,
+          optimizedShare: estimatedUnits ? (optimizedUnits / estimatedUnits) * 100 : 0,
+          reductionPct: p.reduction * 100,
+        };
+      })
       .sort((a, b) => b.units - a.units);
 
     const top3 = perAppliance.slice(0, 3).reduce((s, p) => s + p.cost, 0);
