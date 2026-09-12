@@ -51,7 +51,17 @@ type Result = {
   taxes: number;
   fixed: number;
   total: number;
-  perAppliance: { name: string; units: number; cost: number; share: number; tip: string }[];
+  perAppliance: {
+    name: string;
+    units: number;
+    cost: number;
+    share: number;
+    tip: string;
+    optimizedUnits: number;
+    optimizedCost: number;
+    optimizedShare: number;
+    reductionPct: number;
+  }[];
   savings: number;
   gap: number;
   solar: ReturnType<typeof calculateSolar>;
@@ -59,6 +69,20 @@ type Result = {
   vampire: VampireResult;
   budget: BudgetVerdict;
 };
+
+/** Realistic unit reduction per appliance if the household follows the Awaaz-e-Pakistan tips. */
+const reductionByAppliance: Record<string, number> = {
+  ac: 0.28,
+  fridge: 0.12,
+  fan: 0.35,
+  geyser: 0.4,
+  iron: 0.25,
+  lights: 0.5,
+  washing: 0.2,
+  tv: 0.3,
+};
+
+const reductionFor = (id: string) => reductionByAppliance[id] ?? 0.15;
 
 export function BillAudit({ onContextChange }: { onContextChange?: (ctx: AdvisorContext) => void }) {
   const [appliances, setAppliances] = useState<Appliance[]>(defaultAppliances);
@@ -141,7 +165,7 @@ export function BillAudit({ onContextChange }: { onContextChange?: (ctx: Advisor
   const audit = () => {
     const per = appliances.map((a) => {
       const units = (a.watts * a.hours * a.qty * 30) / 1000;
-      return { name: a.name, units, tip: a.tip };
+      return { name: a.name, units, tip: a.tip, reduction: reductionFor(a.id) };
     });
     const estimatedUnits = per.reduce((s, p) => s + p.units, 0);
     const units = Math.max(billedUnits, 0);
@@ -153,13 +177,20 @@ export function BillAudit({ onContextChange }: { onContextChange?: (ctx: Advisor
     const marginalRate = slabRows.at(-1)?.rate ?? disco.slabs[0]!.rate;
 
     const perAppliance = per
-      .map((p) => ({
-        name: p.name,
-        units: p.units,
-        cost: p.units * marginalRate * 1.29,
-        share: estimatedUnits ? (p.units / estimatedUnits) * 100 : 0,
-        tip: p.tip,
-      }))
+      .map((p) => {
+        const optimizedUnits = p.units * (1 - p.reduction);
+        return {
+          name: p.name,
+          units: p.units,
+          cost: p.units * marginalRate * 1.29,
+          share: estimatedUnits ? (p.units / estimatedUnits) * 100 : 0,
+          tip: p.tip,
+          optimizedUnits,
+          optimizedCost: optimizedUnits * marginalRate * 1.29,
+          optimizedShare: estimatedUnits ? (optimizedUnits / estimatedUnits) * 100 : 0,
+          reductionPct: p.reduction * 100,
+        };
+      })
       .sort((a, b) => b.units - a.units);
 
     const top3 = perAppliance.slice(0, 3).reduce((s, p) => s + p.cost, 0);
@@ -572,8 +603,20 @@ export function BillAudit({ onContextChange }: { onContextChange?: (ctx: Advisor
               </div>
 
               <div className="rounded-2xl border bg-card p-5 shadow-sm">
-                <h4 className="mb-4 text-sm font-semibold">Where your units go</h4>
-                <div className="space-y-3">
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+                  <h4 className="text-sm font-semibold">Where your units go</h4>
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1.5">
+                      <span className="h-2 w-4 rounded-full bg-gradient-to-r from-destructive via-warning to-primary" />
+                      Now
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="h-2 w-4 rounded-full bg-primary/60" />
+                      After Awaaz tips
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-4">
                   {result.perAppliance.map((p) => (
                     <div key={p.name}>
                       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 text-sm">
@@ -591,9 +634,36 @@ export function BillAudit({ onContextChange }: { onContextChange?: (ctx: Advisor
                           style={{ width: `${Math.min(100, p.share)}%` }}
                         />
                       </div>
+                      <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-secondary/60">
+                        <div
+                          className="h-full rounded-full bg-primary/60 transition-all duration-700"
+                          style={{ width: `${Math.min(100, p.optimizedShare)}%` }}
+                        />
+                      </div>
+                      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                        <span className="trend-down">−{Math.round(p.reductionPct)}%</span>
+                        <span>
+                          {Math.round(p.optimizedUnits)} units · {pkr(p.optimizedCost)} after
+                          following the tips (saves {pkr(p.cost - p.optimizedCost)})
+                        </span>
+                      </div>
                     </div>
                   ))}
                 </div>
+                <p className="mt-4 rounded-xl bg-primary/10 p-3 text-sm">
+                  Follow every appliance tip and your monthly usage drops to about{" "}
+                  <strong>
+                    {Math.round(
+                      result.perAppliance.reduce((s, p) => s + p.optimizedUnits, 0),
+                    )}{" "}
+                    units
+                  </strong>{" "}
+                  — roughly{" "}
+                  <strong>
+                    {pkr(result.perAppliance.reduce((s, p) => s + (p.cost - p.optimizedCost), 0))}
+                  </strong>{" "}
+                  saved a month.
+                </p>
               </div>
 
               <div className="rounded-2xl border bg-card p-5 shadow-sm">
