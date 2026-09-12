@@ -51,7 +51,17 @@ type Result = {
   taxes: number;
   fixed: number;
   total: number;
-  perAppliance: { name: string; units: number; cost: number; share: number; tip: string }[];
+  perAppliance: {
+    name: string;
+    units: number;
+    cost: number;
+    share: number;
+    tip: string;
+    optimizedUnits: number;
+    optimizedCost: number;
+    optimizedShare: number;
+    reductionPct: number;
+  }[];
   savings: number;
   gap: number;
   solar: ReturnType<typeof calculateSolar>;
