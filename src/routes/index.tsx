@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Zap, ChefHat, ShoppingBasket, Megaphone, Sun, Route as RouteIcon } from "lucide-react";
+import { Zap, ChefHat, ShoppingBasket, Megaphone, Sun, Route as RouteIcon, Flame } from "lucide-react";
 import { BillAudit } from "@/components/awaaz/BillAudit";
 import { RecipeMaker } from "@/components/awaaz/RecipeMaker";
 import { MarketFinder } from "@/components/awaaz/MarketFinder";
@@ -8,6 +8,7 @@ import { EnergyAdvisor } from "@/components/awaaz/EnergyAdvisor";
 import { SolarCalculator } from "@/components/awaaz/SolarCalculator";
 import { VampireDetector } from "@/components/awaaz/VampireDetector";
 import { CommuteCalculator } from "@/components/awaaz/CommuteCalculator";
+import { GasCookingCalculator } from "@/components/awaaz/GasCookingCalculator";
 import type { AdvisorContext } from "@/lib/advisor-engine";
 
 export const Route = createFileRoute("/")({
@@ -36,6 +37,7 @@ const tabs = [
   { id: "bills", label: "Bill Audit", short: "Bills", icon: Zap },
   { id: "optimizer", label: "Solar & Energy Optimizer", short: "Optimizer", icon: Sun },
   { id: "commute", label: "Commute & Fuel", short: "Commute", icon: RouteIcon },
+  { id: "cooking", label: "Cooking Gas", short: "Cooking", icon: Flame },
   { id: "recipes", label: "Leftover Recipes", short: "Recipes", icon: ChefHat },
   { id: "market", label: "Market Value", short: "Market", icon: ShoppingBasket },
 ] as const;
@@ -132,6 +134,7 @@ function Index() {
           </div>
         )}
         {tab === "commute" && <CommuteCalculator key="commute" />}
+        {tab === "cooking" && <GasCookingCalculator key="cooking" />}
         {tab === "recipes" && <RecipeMaker key="recipes" />}
         {tab === "market" && <MarketFinder key="market" />}
       </main>
@@ -145,7 +148,7 @@ function Index() {
       )}
 
       <nav className="fixed inset-x-0 bottom-4 z-40 flex justify-center px-4 md:hidden">
-        <div className="floating-nav grid w-full max-w-md grid-cols-5 gap-1 p-1.5">
+        <div className="floating-nav grid w-full max-w-md grid-cols-6 gap-1 p-1.5">
           {tabs.map((t) => {
             const Icon = t.icon;
             const active = tab === t.id;
