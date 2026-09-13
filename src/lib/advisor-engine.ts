@@ -1,9 +1,9 @@
-import type { Appliance } from "./awaaz-data";
-import type { Disco } from "./awaaz-data";
-import { slabBreakdownFor, pkr } from "./awaaz-data";
+import type { Appliance, Disco } from "./awaaz-data";
+import { defaultAppliances, discos, slabBreakdownFor, pkr } from "./awaaz-data";
 import {
   lifelineStatus,
   calculateVampire,
+  defaultStandbyDevices,
   type StandbyDevice,
   type BudgetVerdict,
 } from "./awaaz-household";
@@ -27,6 +27,52 @@ export type AdvisorContext = {
   vampireMonthlyCost: number;
 };
 
+export function createDefaultAdvisorContext(): AdvisorContext {
+  const disco = discos[0]!;
+  const billedUnits = 312;
+  const lifeline = lifelineStatus(billedUnits);
+  const activeStandby = defaultStandbyDevices;
+  const marginalRate =
+    slabBreakdownFor(billedUnits, disco.slabs).at(-1)?.rate ?? disco.slabs[0]!.rate;
+  const vampire = calculateVampire(activeStandby, marginalRate * (1 + disco.taxRate));
+  const estimatedUnits = defaultAppliances.reduce(
+    (s, a) => s + (a.watts * a.hours * a.qty * 30) / 1000,
+    0,
+  );
+  const slabRows = slabBreakdownFor(billedUnits, disco.slabs);
+  const energyCost = slabRows.reduce((s, r) => s + r.amount, 0);
+  const total = energyCost * (1 + disco.taxRate) + disco.fixedCharges;
+  const perAppliance = defaultAppliances.map((a) => {
+    const units = (a.watts * a.hours * a.qty * 30) / 1000;
+    return {
+      name: a.name,
+      units,
+      cost: units * marginalRate * 1.29,
+      share: estimatedUnits ? (units / estimatedUnits) * 100 : 0,
+      tip: a.tip,
+    };
+  });
+
+  return {
+    appliances: defaultAppliances,
+    disco,
+    billedUnits,
+    billAmount: total,
+    budget: 35000,
+    standby: defaultStandbyDevices,
+    budgetVerdict: null,
+    hasResult: true,
+    estimatedUnits,
+    totalBill: total,
+    savings: 4200,
+    perAppliance,
+    lifelineTier: lifeline.title,
+    unprotected: lifeline.tier === "unprotected",
+    unitsToNextTier: lifeline.unitsToNextTier,
+    vampireMonthlyCost: vampire.cost,
+  };
+}
+
 export type AdvisorResponse = {
   tag: "saving" | "warning" | "tip";
   tagLabel: string;
@@ -34,11 +80,17 @@ export type AdvisorResponse = {
   romanUrdu: string;
 };
 
-type Intent = "slab" | "appliance" | "bill" | "saving" | "greeting" | "general";
+type Intent = "slab" | "appliance" | "bill" | "saving" | "greeting" | "market" | "general";
 
 function detectIntent(message: string): Intent {
   const lower = message.toLowerCase();
-  if (/(salam|hello|hi|assalam|namaste|hey|salam|adaab)/i.test(lower)) return "greeting";
+  if (/(salam|hello|hi|assalam|namaste|hey|adaab)/i.test(lower)) return "greeting";
+  if (
+    /(bazaar|market|grocery|rashan|tamatar|tomato|chicken|murghi|atta|sugar|cheeni|oil|ghee|sabzi|kiryana|supermarket|itwar|inflation)/i.test(
+      lower,
+    )
+  )
+    return "market";
   if (/(slab|tariff|rate|protected|unprotected|lifeline|unit)/i.test(lower)) return "slab";
   if (
     /(appliance|ac|fan|fridge|light|tv|iron|heater|motor|geyser|washing|plug|device)/i.test(lower)
@@ -216,6 +268,15 @@ function generateSavingAdvice(ctx: AdvisorContext): AdvisorResponse {
   };
 }
 
+function generateMarketAdvice(ctx: AdvisorContext): AdvisorResponse {
+  return {
+    tag: "saving",
+    tagLabel: "Bazaar & Grocery Intelligence",
+    urdu: `راشن اور بازار کی بچت (${ctx.disco.city}): تازہ سبزیاں اتوار یا ماڈل بازار سے خریدیں جہاں قیمتیں محلہ کریانہ سے 16% اور سپر اسٹور سے 30% تک کم ہوتی ہیں۔ ٹماٹر کی مہنگائی سے بچنے کے لیے دہی اور املی کا پیسٹ استعمال کریں، اور برائلر چکن کے دنوں میں کالا چنا یا سفید لوبیا ملا کر پروٹین بجٹ متوازن رکھیں۔`,
+    romanUrdu: `Rashan aur bazaar ki bachat (${ctx.disco.city}): Taza sabziyan Itwar ya Model Bazaar se khareedein jahan qeematein kiryana se 16% aur superstore se 30% sasti hoti hain. Tamatar ki mehngai se bachne ke liye dahi aur imli paste istemaal karein, aur chicken ke dino mein Kala Chana ya Lobia mila kar protein budget balanced rakhein.`,
+  };
+}
+
 function generateGeneralAdvice(ctx: AdvisorContext): AdvisorResponse {
   const slabInfo = ctx.unprotected ? `آپ غیر محفوظ سلاب میں ہیں` : `آپ محفوظ سلاب میں ہیں`;
   const slabInfoRoman = ctx.unprotected
@@ -235,6 +296,8 @@ export function generateAdvice(message: string, ctx: AdvisorContext): AdvisorRes
   switch (intent) {
     case "greeting":
       return generateGreeting(ctx);
+    case "market":
+      return generateMarketAdvice(ctx);
     case "slab":
       return generateSlabAdvice(ctx);
     case "appliance":

@@ -252,3 +252,5 @@ export function routingAdvice(category: Category): string {
       return "Compare kiryana and supermarket rates — savings here are modest.";
   }
 }
+
+export const knownGroceryNames = groceries.map((g) => g.name);

@@ -16,9 +16,13 @@ import {
   CircleDot,
   Wind,
   Receipt,
+  Sparkles,
+  Timer,
+  Check,
 } from "lucide-react";
 import { pkr } from "@/lib/awaaz-data";
 import { SectionHead, Field } from "@/components/awaaz/BillAudit";
+import { GasBillScanner, type GasBillParseResult } from "@/components/awaaz/GasBillScanner";
 
 type MethodId = "lpg" | "pipeline";
 type SlabId = "protectedLow" | "protectedHigh" | "nonProtectedMid" | "nonProtectedHigh";
@@ -165,6 +169,13 @@ export function GasCookingCalculator() {
     setSaved(false);
   }
 
+  function handleApplyGasBill(scan: GasBillParseResult) {
+    setMethod("pipeline");
+    setMmbtu(scan.unitsMmbtu);
+    setSlabId(scan.slabId);
+    setSaved(false);
+  }
+
   return (
     <div className="tab-enter space-y-6">
       <SectionHead
@@ -174,46 +185,50 @@ export function GasCookingCalculator() {
       />
 
       {/* ── Live utility-rate ticker ───────────────────────── */}
-      <div className="rounded-2xl border bg-card p-4 shadow-sm">
+      <div className="glass-card p-4 sm:p-5 shadow-sm">
         <div className="mb-3 flex items-center justify-between">
-          <p className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-            <Receipt className="h-3.5 w-3.5 text-[var(--warning)]" /> Reference cooking-energy rates
+          <p className="flex items-center gap-2 text-xs font-bold text-white tracking-tight">
+            <Receipt className="h-3.5 w-3.5 text-amber-400" /> Reference Cooking Energy Rates (OGRA
+            Domestic)
           </p>
-          <span className="text-[10px] text-muted-foreground">Indicative only</span>
+          <span className="badge-warning">Indicative Tariffs</span>
         </div>
         <div className="grid gap-2 sm:grid-cols-2">
-          <div className="rounded-xl border border-border bg-surface px-3 py-2.5">
-            <span className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
-              <Cylinder className="h-3 w-3" /> LPG Cylinder (11.8 kg)
+          <div className="rounded-xl border border-white/[0.08] bg-slate-900/60 p-3">
+            <span className="flex items-center gap-1.5 text-[11px] font-semibold text-amber-400">
+              <Cylinder className="h-3 w-3" /> LPG Domestic Cylinder (11.8 kg)
             </span>
-            <span className="mt-0.5 block text-sm font-bold text-foreground">
+            <span className="mt-1 block text-base font-extrabold text-white font-mono">
               Rs {CYLINDER_PRICE.toLocaleString("en-PK")}
             </span>
             <span className="text-[10px] text-muted-foreground">
-              ≈ Rs {CYLINDER_PER_KG.toFixed(2)}/kg
+              ≈ Rs {CYLINDER_PER_KG.toFixed(2)}/kg + Rs {CYLINDER_DELIVERY} delivery overhead
             </span>
           </div>
-          <div className="rounded-xl border border-border bg-surface px-3 py-2.5">
-            <span className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
-              <Cable className="h-3 w-3" /> Piped Sui Gas (SSGC/SNGPL)
+          <div className="rounded-xl border border-white/[0.08] bg-slate-900/60 p-3">
+            <span className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-400">
+              <Cable className="h-3 w-3" /> Piped Sui Gas (SSGC / SNGPL)
             </span>
-            <span className="mt-0.5 block text-sm font-bold text-foreground">
+            <span className="mt-1 block text-base font-extrabold text-white font-mono">
               Rs 200 – 4,200 / MMBTU
             </span>
             <span className="text-[10px] text-muted-foreground">
-              Protected to non-protected slabs + fixed charges
+              Protected (Rs 200-350) vs. Non-Protected (Rs 1,500-4,200) + fixed meter charge
             </span>
           </div>
         </div>
       </div>
 
+      {/* ── Sui Gas Bill Upload Dropzone & Camera Reader ────── */}
+      <GasBillScanner onApplyBill={handleApplyGasBill} />
+
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
         {/* ── Inputs ─────────────────────────────────────────── */}
-        <div className="rounded-2xl border bg-card p-5 shadow-sm">
-          <h3 className="mb-4 text-base font-semibold">Your kitchen</h3>
+        <div className="glass-card p-5 sm:p-6 shadow-md">
+          <h3 className="mb-4 text-base font-bold text-white tracking-tight">Your Kitchen Setup</h3>
 
           {/* Method selector */}
-          <p className="mb-2 text-xs font-medium text-muted-foreground">Main cooking method</p>
+          <p className="mb-2 text-xs font-semibold text-slate-300">Main cooking energy source</p>
           <div className="mb-5 grid grid-cols-2 gap-2">
             {[
               {
@@ -223,7 +238,7 @@ export function GasCookingCalculator() {
               },
               {
                 id: "pipeline" as MethodId,
-                name: "Piped Sui Gas",
+                name: "Piped Sui Gas (SSGC/SNGPL)",
                 icon: <Cable className="h-5 w-5" />,
               },
             ].map((m) => {
@@ -237,22 +252,22 @@ export function GasCookingCalculator() {
                     setSaved(false);
                   }}
                   aria-pressed={active}
-                  className={`flex flex-col items-start gap-1.5 rounded-xl border px-3 py-3 text-left transition ${
+                  className={`flex flex-col items-start gap-1.5 rounded-xl border p-3.5 text-left transition-all duration-200 active:scale-95 ${
                     active
-                      ? "border-primary bg-primary/15 text-primary"
-                      : "border-border bg-surface text-muted-foreground hover:border-primary/40"
+                      ? "border-emerald-500/40 bg-emerald-500/20 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.2)]"
+                      : "border-white/[0.08] bg-slate-900/60 text-slate-400 hover:border-white/[0.16] hover:text-white"
                   }`}
                 >
-                  <span className={active ? "text-primary" : "text-foreground/70"}>{m.icon}</span>
-                  <span className="text-xs font-semibold leading-tight">{m.name}</span>
+                  <span className={active ? "text-emerald-400" : "text-slate-400"}>{m.icon}</span>
+                  <span className="text-xs font-bold leading-tight">{m.name}</span>
                 </button>
               );
             })}
           </div>
 
           {/* Cooking load / family size */}
-          <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-            <Users className="h-3.5 w-3.5" /> Household cooking load
+          <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-slate-300">
+            <Users className="h-3.5 w-3.5 text-emerald-400" /> Household cooking volume
           </p>
           <div className="mb-5 grid grid-cols-3 gap-2">
             {loads.map((l) => {
@@ -263,16 +278,16 @@ export function GasCookingCalculator() {
                   type="button"
                   onClick={() => applyLoad(l)}
                   aria-pressed={active}
-                  className={`flex flex-col items-start gap-0.5 rounded-xl border px-3 py-2.5 text-left transition ${
+                  className={`flex flex-col items-start gap-0.5 rounded-xl border p-2.5 text-left transition-all duration-200 active:scale-95 ${
                     active
-                      ? "border-primary bg-primary/15 text-primary"
-                      : "border-border bg-surface text-muted-foreground hover:border-primary/40"
+                      ? "border-emerald-500/40 bg-emerald-500/20 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.2)]"
+                      : "border-white/[0.08] bg-slate-900/60 text-slate-400 hover:border-white/[0.16] hover:text-white"
                   }`}
                 >
-                  <span className="flex items-center gap-1 text-xs font-semibold">
+                  <span className="flex items-center gap-1 text-xs font-bold">
                     <Utensils className="h-3 w-3" /> {l.label}
                   </span>
-                  <span className="text-[10px] font-normal opacity-70">{l.people}</span>
+                  <span className="text-[10px] font-normal opacity-80">{l.people}</span>
                 </button>
               );
             })}
@@ -282,10 +297,10 @@ export function GasCookingCalculator() {
           {isLpg ? (
             <div className="mb-5">
               <div className="mb-2 flex items-center justify-between">
-                <span className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                  <Cylinder className="h-3.5 w-3.5" /> Cylinders used per month
+                <span className="flex items-center gap-2 text-xs font-semibold text-slate-300">
+                  <Cylinder className="h-3.5 w-3.5 text-amber-400" /> Cylinders used per month
                 </span>
-                <span className="rounded-lg bg-primary/15 px-2 py-0.5 text-sm font-bold text-primary">
+                <span className="rounded-lg border border-amber-500/40 bg-amber-500/20 px-2.5 py-0.5 text-xs font-bold text-amber-300 font-mono">
                   {cylinders} {cylinders === 1 ? "cylinder" : "cylinders"}
                 </span>
               </div>
@@ -299,7 +314,7 @@ export function GasCookingCalculator() {
                   setCylinders(Number(e.target.value));
                   setSaved(false);
                 }}
-                className="w-full accent-[var(--primary)]"
+                className="w-full accent-amber-400"
                 aria-label="Cylinders used per month"
               />
               <div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
@@ -325,7 +340,7 @@ export function GasCookingCalculator() {
                   />
                 </div>
               </Field>
-              <Field label="Tariff slab">
+              <Field label="Tariff slab tier">
                 <select
                   value={slabId}
                   onChange={(e) => {
@@ -347,17 +362,17 @@ export function GasCookingCalculator() {
           {/* Quick chips */}
           <div className="grid grid-cols-3 gap-2">
             <MiniStat
-              icon={<Flame className="h-3.5 w-3.5" />}
+              icon={<Flame className="h-3.5 w-3.5 text-amber-400" />}
               label={isLpg ? "Gas / month" : "Units"}
               value={isLpg ? `${result.kg.toFixed(1)} kg` : `${mmbtu} MMBTU`}
             />
             <MiniStat
-              icon={<Gauge className="h-3.5 w-3.5" />}
+              icon={<Gauge className="h-3.5 w-3.5 text-emerald-400" />}
               label="Rate"
               value={isLpg ? `Rs ${Math.round(CYLINDER_PER_KG)}/kg` : `Rs ${slab.rate}/MMBTU`}
             />
             <MiniStat
-              icon={<Receipt className="h-3.5 w-3.5" />}
+              icon={<Receipt className="h-3.5 w-3.5 text-slate-400" />}
               label="Fixed cost"
               value={pkr(result.fixedCost)}
             />
@@ -367,46 +382,50 @@ export function GasCookingCalculator() {
         {/* ── Results ────────────────────────────────────────── */}
         <div className="space-y-4">
           {/* Monthly projection */}
-          <div className="rounded-2xl border bg-card p-5 shadow-sm">
-            <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold">
-              <Flame className="h-4 w-4 text-[var(--warning)]" /> Monthly cooking-energy burn
+          <div className="glass-card p-5 shadow-sm">
+            <h4 className="mb-3 flex items-center gap-2 text-sm font-bold text-white tracking-tight">
+              <Flame className="h-4 w-4 text-amber-400" /> Monthly Cooking-Energy Outlay
             </h4>
             <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-xl border bg-surface p-3">
-                <p className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                  <Flame className="h-3 w-3" /> Total cash burn
+              <div className="rounded-xl border border-amber-500/30 bg-amber-950/20 p-3.5">
+                <p className="flex items-center gap-1 text-[11px] text-amber-300">
+                  <Flame className="h-3 w-3 text-amber-400" /> Total Cash Burn
                 </p>
-                <p className="mt-1 text-2xl font-bold text-[var(--warning)]">
+                <p className="mt-1 text-2xl font-extrabold text-amber-400 font-mono">
                   {pkr(result.current)}
                 </p>
               </div>
-              <div className="rounded-xl border bg-surface p-3">
+              <div className="rounded-xl border border-white/[0.06] bg-slate-900/60 p-3.5">
                 <p className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                  <Receipt className="h-3 w-3" /> Yearly projection
+                  <Receipt className="h-3 w-3 text-emerald-400" /> Yearly Projection
                 </p>
-                <p className="mt-1 text-2xl font-bold">{pkr(result.current * 12)}</p>
+                <p className="mt-1 text-2xl font-extrabold text-white font-mono">
+                  {pkr(result.current * 12)}
+                </p>
               </div>
             </div>
             {/* Fixed vs variable breakdown */}
-            <div className="mt-3 space-y-1.5">
+            <div className="mt-3.5 space-y-2">
               <BreakdownRow
-                label={isLpg ? "Cylinder gas cost" : "Metered gas cost"}
+                label={isLpg ? "Cylinder gas fuel" : "Metered gas commodity"}
                 value={result.variableCost}
                 total={result.current}
-                tone="var(--warning)"
+                tone="#f59e0b"
               />
               <BreakdownRow
-                label={isLpg ? "Delivery / handling" : "Fixed meter charge"}
+                label={isLpg ? "Delivery & local handling" : "Fixed monthly meter rent"}
                 value={result.fixedCost}
                 total={result.current}
-                tone="var(--muted-foreground)"
+                tone="#64748b"
               />
             </div>
           </div>
 
           {/* Tip selector */}
-          <div className="rounded-2xl border bg-card p-5 shadow-sm">
-            <h4 className="mb-3 text-sm font-semibold">Pick a kitchen fix</h4>
+          <div className="glass-card p-5 shadow-sm">
+            <h4 className="mb-3 text-sm font-bold text-white tracking-tight">
+              Select Kitchen Energy Fix
+            </h4>
             <div className="grid gap-2 sm:grid-cols-3">
               {tips.map((t) => {
                 const active = t.id === tipId;
@@ -419,103 +438,169 @@ export function GasCookingCalculator() {
                       setSaved(false);
                     }}
                     aria-pressed={active}
-                    className={`flex flex-col items-start gap-1.5 rounded-xl border px-3 py-2.5 text-left transition ${
+                    className={`flex flex-col items-start gap-1.5 rounded-xl border p-3 text-left transition-all duration-200 active:scale-95 ${
                       active
-                        ? "border-primary bg-primary/15 text-primary"
-                        : "border-border bg-surface text-muted-foreground hover:border-primary/40"
+                        ? "border-emerald-500/40 bg-emerald-500/20 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.25)]"
+                        : "border-white/[0.08] bg-slate-900/60 text-slate-400 hover:border-white/[0.16] hover:text-white"
                     }`}
                   >
-                    <span className={active ? "text-primary" : "text-foreground/70"}>{t.icon}</span>
-                    <span className="text-xs font-semibold leading-tight">{t.short}</span>
+                    <span className={active ? "text-emerald-400" : "text-slate-400"}>{t.icon}</span>
+                    <span className="text-xs font-bold leading-tight">{t.short}</span>
                   </button>
                 );
               })}
             </div>
-            <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">{tip.note}</p>
+            <p className="mt-3 text-xs leading-relaxed text-slate-300">{tip.note}</p>
           </div>
 
           {/* Savings badge */}
-          <div className="neon-card p-5">
+          <div className="dashboard-card p-5 sm:p-6 border-emerald-500/30">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="eyebrow">This fix saves you</p>
-                <p className="mt-1 text-3xl font-bold text-primary">{pkr(result.savings)}</p>
-                <p className="text-sm text-muted-foreground">
-                  per month · {pkr(result.yearlySavings)} a year
+                <span className="badge-safe">Recoverable Monthly Cashflow</span>
+                <p className="mt-1.5 text-3xl font-extrabold text-emerald-400 font-mono">
+                  {pkr(result.savings)}
+                </p>
+                <p className="text-xs text-slate-300">
+                  per month · {pkr(result.yearlySavings)} annual retainable kitchen fund
                 </p>
               </div>
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary/15 text-primary">
-                <PiggyBank className="h-6 w-6" />
-              </span>
+              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-emerald-500/40 bg-emerald-500/20 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.35)]">
+                <PiggyBank className="h-6 w-6 animate-pulse" />
+              </div>
             </div>
           </div>
 
           {/* Dual-bar comparison */}
-          <div className="rounded-2xl border bg-card p-5 shadow-sm">
-            <h4 className="mb-4 flex items-center gap-2 text-sm font-semibold">
-              <TrendingDown className="h-4 w-4 text-primary" /> Wasteful vs. optimized cooking
+          <div className="glass-card p-5 shadow-sm">
+            <h4 className="mb-4 flex items-center gap-2 text-sm font-bold text-white tracking-tight">
+              <TrendingDown className="h-4 w-4 text-emerald-400" /> Wasteful vs. Optimized Burn
             </h4>
 
             <div className="space-y-5">
               <div>
                 <div className="mb-1.5 flex items-center justify-between text-xs">
-                  <span className="flex items-center gap-1.5 font-medium text-foreground/80">
-                    <Wind className="h-3.5 w-3.5 text-[var(--danger)]" /> Wasteful habit (now)
+                  <span className="flex items-center gap-1.5 font-semibold text-slate-300">
+                    <Wind className="h-3.5 w-3.5 text-rose-400" /> Wasteful Habit (Now)
                   </span>
-                  <span className="font-bold text-[var(--warning)]">{pkr(result.current)}</span>
+                  <span className="font-extrabold font-mono text-amber-400">
+                    {pkr(result.current)}
+                  </span>
                 </div>
-                <div className="h-3.5 overflow-hidden rounded-full bg-secondary">
-                  <div
-                    className="h-full rounded-full transition-all duration-700"
-                    style={{
-                      width: "100%",
-                      background: "linear-gradient(90deg, var(--danger), var(--warning))",
-                    }}
-                  />
+                <div className="progress-track">
+                  <div className="progress-fill-danger" style={{ width: "100%" }} />
                 </div>
               </div>
 
               <div>
                 <div className="mb-1.5 flex items-center justify-between text-xs">
-                  <span className="flex items-center gap-1.5 font-medium text-foreground/80">
+                  <span className="flex items-center gap-1.5 font-semibold text-emerald-300">
                     {tip.icon} With {tip.short}
                   </span>
-                  <span className="font-bold text-primary">{pkr(result.optimized)}</span>
+                  <span className="font-extrabold font-mono text-emerald-400">
+                    {pkr(result.optimized)}
+                  </span>
                 </div>
-                <div className="h-3.5 overflow-hidden rounded-full bg-secondary">
-                  <div
-                    className="h-full rounded-full transition-all duration-700"
-                    style={{
-                      width: `${optimizedPct}%`,
-                      background:
-                        "linear-gradient(90deg, color-mix(in oklab, var(--primary) 55%, transparent), var(--primary))",
-                    }}
-                  />
+                <div className="progress-track">
+                  <div className="progress-fill-emerald" style={{ width: `${optimizedPct}%` }} />
                 </div>
               </div>
             </div>
 
-            <div className="mt-4 flex items-center justify-between rounded-xl bg-primary/10 px-3 py-2.5 text-xs">
-              <span className="text-muted-foreground">Cut from your monthly burn</span>
-              <span className="font-bold text-primary">
-                −{Math.round(result.savingsPct)}% · {pkr(result.savings)}
+            <div className="mt-4 flex items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-950/20 px-3.5 py-2.5 text-xs">
+              <span className="text-slate-300">Net Energy Efficiency Gain</span>
+              <span className="font-extrabold font-mono text-emerald-400">
+                −{Math.round(result.savingsPct)}% · {pkr(result.savings)}/mo
               </span>
             </div>
           </div>
 
-          {/* Advice footer */}
-          <div className="warn-card p-5">
-            <div className="flex items-start gap-3">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[var(--warning)]/20 text-[var(--warning)]">
-                <Lightbulb className="h-5 w-5" />
-              </span>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold">Smart tip for you</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {adviceFor(method, tip, load, result.savings)}
-                </p>
+          {/* Rich Pakistani Kitchen Gas-Saving Playbook footer */}
+          <div className="dashboard-card p-5 sm:p-6 border-amber-500/30">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.08] pb-3">
+              <div className="flex items-center gap-2.5">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-amber-500/40 bg-amber-500/20 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.25)]">
+                  <Lightbulb className="h-5 w-5" />
+                </span>
+                <div>
+                  <h4 className="text-sm font-bold text-white tracking-tight">
+                    Pakistani Kitchen Gas-Saving Playbook
+                  </h4>
+                  <p className="text-xs text-muted-foreground">
+                    Hyper-localized strategies for{" "}
+                    {isLpg ? "LPG Domestic Cylinder" : "Piped Sui Gas (SNGPL / SSGC)"}
+                  </p>
+                </div>
               </div>
+              <span className="badge-safe">Save ~{pkr(result.savings)}/mo</span>
             </div>
+
+            <p className="mt-3 text-xs leading-relaxed text-slate-300">
+              Essential kitchen practices across Pakistani households to eliminate wasteful gas burn
+              and dodge high tariff slabs:
+            </p>
+
+            <ul className="mt-3 space-y-2.5 text-xs">
+              <li className="flex items-start gap-2.5 rounded-xl border border-white/[0.06] bg-slate-900/60 p-3">
+                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg border border-emerald-500/30 bg-emerald-500/20 text-emerald-400 font-bold">
+                  <CookingPot className="h-3.5 w-3.5" />
+                </span>
+                <div className="min-w-0">
+                  <span className="font-bold text-white">Pressure Cookers for Daal & Meat:</span>{" "}
+                  <span className="text-slate-300">
+                    Use a reliable, whistle-valved pressure cooker for daal (chana, lobia, mash) and
+                    meat (mutton/beef). Steam pressure cuts boiling and tenderizing time by up to
+                    40%, directly reducing fuel consumption per meal.
+                  </span>
+                </div>
+              </li>
+
+              <li className="flex items-start gap-2.5 rounded-xl border border-white/[0.06] bg-slate-900/60 p-3">
+                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg border border-amber-500/30 bg-amber-500/20 text-amber-400 font-bold">
+                  <Wrench className="h-3.5 w-3.5" />
+                </span>
+                <div className="min-w-0">
+                  <span className="font-bold text-white">
+                    Clean Burner Nozzles (Surakh) with Wire Brush:
+                  </span>{" "}
+                  <span className="text-slate-300">
+                    Keep burner brass ports and nozzles unclogged using a fine wire brush or needle.
+                    Carbon and curry grease blockage produce wasteful yellow/orange flames that coat
+                    pots in black soot; unclogged ports produce a clean, intensely hot blue flame.
+                  </span>
+                </div>
+              </li>
+
+              <li className="flex items-start gap-2.5 rounded-xl border border-white/[0.06] bg-slate-900/60 p-3">
+                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg border border-emerald-500/30 bg-emerald-500/20 text-emerald-400 font-bold">
+                  <CircleDot className="h-3.5 w-3.5" />
+                </span>
+                <div className="min-w-0">
+                  <span className="font-bold text-white">
+                    Match Flat-Bottom Pots Properly to Burner Size:
+                  </span>{" "}
+                  <span className="text-slate-300">
+                    Ensure the bottom of patilas and skillets fully covers the flame. If flames lick
+                    up the outside walls of the utensil, over 20% of thermal heat escapes into
+                    ambient kitchen air rather than cooking your handi.
+                  </span>
+                </div>
+              </li>
+
+              <li className="flex items-start gap-2.5 rounded-xl border border-white/[0.06] bg-slate-900/60 p-3">
+                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg border border-emerald-500/30 bg-emerald-500/20 text-emerald-400 font-bold">
+                  <Timer className="h-3.5 w-3.5" />
+                </span>
+                <div className="min-w-0">
+                  <span className="font-bold text-white">Pre-Soaking Lentils Before Boiling:</span>{" "}
+                  <span className="text-slate-300">
+                    Pre-soak hard lentils, chana, and beans in water for 30 to 45 minutes prior to
+                    cooking. This hydrates the core beforehand and knocks 25–30% off stove boiling
+                    duration.
+                  </span>
+                </div>
+              </li>
+            </ul>
 
             <button
               type="button"

@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { pkr } from "@/lib/awaaz-data";
 import { SectionHead, Field } from "@/components/awaaz/BillAudit";
+import { CyberProgressRing } from "@/components/awaaz/CyberProgressRing";
 
 type VehicleId = "bike70" | "bike125" | "smallCar" | "suv" | "public";
 type FuelId = "petrol" | "diesel" | "lpg";
@@ -67,7 +68,7 @@ const vehicles: Vehicle[] = [
 
 /** Live reference rates for Pakistan. */
 const fuelTypes: FuelType[] = [
-  { id: "petrol", name: "Petrol", price: 375.82, unit: "L" },
+  { id: "petrol", name: "Petrol", price: 373.0, unit: "L" },
   { id: "diesel", name: "Diesel", price: 403.32, unit: "L" },
   { id: "lpg", name: "LPG", price: 258, unit: "kg" },
 ];
@@ -176,14 +177,14 @@ export function CommuteCalculator() {
       />
 
       {/* ── Live fuel-price ticker ─────────────────────────── */}
-      <div className="rounded-2xl border bg-card p-4 shadow-sm">
+      <div className="glass-card p-4 sm:p-5 shadow-sm">
         <div className="mb-3 flex items-center justify-between">
-          <p className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-            <Flame className="h-3.5 w-3.5 text-[var(--warning)]" /> Pakistan reference fuel rates
+          <p className="flex items-center gap-2 text-xs font-bold text-white tracking-tight">
+            <Flame className="h-3.5 w-3.5 text-amber-400" /> Pakistan Reference Fuel Rates (OGRA)
           </p>
-          <span className="text-[10px] text-muted-foreground">Tap to link your fuel</span>
+          <span className="badge-warning">Tap to sync rate</span>
         </div>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
           {fuelTypes.map((f) => {
             const active = f.id === fuelId;
             return (
@@ -193,19 +194,19 @@ export function CommuteCalculator() {
                 onClick={() => selectFuel(f)}
                 aria-pressed={active}
                 disabled={isPublic}
-                className={`flex flex-col items-start rounded-xl border px-3 py-2.5 text-left transition disabled:opacity-50 ${
+                className={`flex flex-col items-start rounded-xl border p-3 text-left transition-all duration-200 active:scale-95 disabled:opacity-50 ${
                   active
-                    ? "border-primary bg-primary/15"
-                    : "border-border bg-surface hover:border-primary/40"
+                    ? "border-emerald-500/50 bg-emerald-500/20 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.2)]"
+                    : "border-white/[0.08] bg-slate-900/60 text-slate-300 hover:border-white/[0.16] hover:bg-slate-900/80"
                 }`}
               >
                 <span
-                  className={`flex items-center gap-1.5 text-[11px] font-medium ${active ? "text-primary" : "text-muted-foreground"}`}
+                  className={`flex items-center gap-1.5 text-[11px] font-semibold ${active ? "text-emerald-300" : "text-slate-400"}`}
                 >
-                  <Droplets className="h-3 w-3" /> {f.name}
+                  <Droplets className="h-3 w-3 text-emerald-400" /> {f.name}
                 </span>
                 <span
-                  className={`mt-0.5 text-sm font-bold ${active ? "text-primary" : "text-foreground"}`}
+                  className={`mt-1 text-base font-extrabold ${active ? "text-white" : "text-slate-200"}`}
                 >
                   Rs {f.price.toLocaleString("en-PK")}
                 </span>
@@ -218,16 +219,18 @@ export function CommuteCalculator() {
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
         {/* ── Inputs ─────────────────────────────────────────── */}
-        <div className="rounded-2xl border bg-card p-5 shadow-sm">
-          <h3 className="mb-4 text-base font-semibold">Your commute</h3>
+        <div className="glass-card p-5 sm:p-6 shadow-md">
+          <h3 className="mb-4 text-base font-bold text-white tracking-tight">
+            Your Commute Pattern
+          </h3>
 
           {/* Distance slider */}
           <div className="mb-5">
             <div className="mb-2 flex items-center justify-between">
-              <span className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                <Route className="h-3.5 w-3.5" /> Daily round-trip distance
+              <span className="flex items-center gap-2 text-xs font-semibold text-slate-300">
+                <Route className="h-3.5 w-3.5 text-emerald-400" /> Daily round-trip distance
               </span>
-              <span className="rounded-lg bg-primary/15 px-2 py-0.5 text-sm font-bold text-primary">
+              <span className="rounded-lg border border-emerald-500/40 bg-emerald-500/20 px-2.5 py-0.5 text-xs font-bold text-emerald-300 font-mono">
                 {dailyKm} KM
               </span>
             </div>
@@ -241,7 +244,7 @@ export function CommuteCalculator() {
                 setDailyKm(Number(e.target.value));
                 setSaved(false);
               }}
-              className="w-full accent-[var(--primary)]"
+              className="w-full accent-emerald-400"
               aria-label="Daily round-trip distance in kilometres"
             />
             <div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
@@ -251,7 +254,7 @@ export function CommuteCalculator() {
           </div>
 
           {/* Vehicle selector */}
-          <p className="mb-2 text-xs font-medium text-muted-foreground">Vehicle type</p>
+          <p className="mb-2 text-xs font-semibold text-slate-300">Vehicle type</p>
           <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-3">
             {vehicles.map((v) => {
               const active = v.id === vehicleId;
@@ -264,15 +267,15 @@ export function CommuteCalculator() {
                     setSaved(false);
                   }}
                   aria-pressed={active}
-                  className={`flex flex-col items-start gap-1.5 rounded-xl border px-3 py-2.5 text-left transition ${
+                  className={`flex flex-col items-start gap-1.5 rounded-xl border p-3 text-left transition-all duration-200 active:scale-95 ${
                     active
-                      ? "border-primary bg-primary/15 text-primary"
-                      : "border-border bg-surface text-muted-foreground hover:border-primary/40"
+                      ? "border-emerald-500/40 bg-emerald-500/20 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.25)]"
+                      : "border-white/[0.08] bg-slate-900/60 text-slate-400 hover:border-white/[0.16] hover:text-white"
                   }`}
                 >
-                  <span className={active ? "text-primary" : "text-foreground/70"}>{v.icon}</span>
-                  <span className="text-xs font-semibold leading-tight">{v.name}</span>
-                  <span className="text-[10px] font-normal opacity-70">
+                  <span className={active ? "text-emerald-400" : "text-slate-400"}>{v.icon}</span>
+                  <span className="text-xs font-bold leading-tight">{v.name}</span>
+                  <span className="text-[10px] font-normal opacity-80">
                     {v.kmPerLitre ? `${v.kmPerLitre} km/l` : `Rs ${v.farePerKm}/km fare`}
                   </span>
                 </button>
@@ -346,42 +349,65 @@ export function CommuteCalculator() {
         {/* ── Results ────────────────────────────────────────── */}
         <div className="space-y-4">
           {/* Full-month projected burn */}
-          <div className="rounded-2xl border bg-card p-5 shadow-sm">
-            <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold">
-              <Flame className="h-4 w-4 text-[var(--warning)]" /> Full-month projected burn
-            </h4>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-xl border bg-surface p-3">
-                <p className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                  <Droplets className="h-3 w-3" /> Total fuel this month
-                </p>
-                <p className="mt-1 text-2xl font-bold">
-                  {isPublic ? "—" : `${result.litres.toFixed(1)}`}
-                  {!isPublic && (
-                    <span className="ml-1 text-sm font-medium text-muted-foreground">
-                      {fuel.unit}
-                    </span>
-                  )}
-                </p>
-              </div>
-              <div className="rounded-xl border bg-surface p-3">
-                <p className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                  <Fuel className="h-3 w-3" /> Projected cash cost
-                </p>
-                <p className="mt-1 text-2xl font-bold text-[var(--warning)]">
-                  {pkr(result.current)}
+          <div className="cyber-glass-card p-5.5">
+            <div className="mb-4 flex items-center justify-between gap-2 border-b border-white/[0.08] pb-3">
+              <h4 className="flex items-center gap-2 text-sm font-bold text-white tracking-tight">
+                <Flame className="h-4 w-4 text-amber-400" /> Full-Month Fuel & Commute Burn
+              </h4>
+              <span className="terminal-badge text-[10px]">L/KM TELEMETRY</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-[auto_minmax(0,1fr)] gap-5 items-center">
+              <CyberProgressRing
+                value={result.current}
+                max={25000}
+                label="Fuel Spend"
+                unit="PKR"
+                size={130}
+                icon={Fuel}
+                thresholds={{ warning: 60, critical: 85 }}
+                formatValue={(val) => `Rs. ${Math.round(val).toLocaleString()}`}
+                subtext={`Baseline Rs. 25,000 allowance`}
+              />
+
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-xl border border-white/[0.08] bg-slate-950/80 p-3.5 shadow-inner">
+                    <p className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                      <Droplets className="h-3.5 w-3.5 text-emerald-400" /> Total Fuel / Mo
+                    </p>
+                    <p className="mt-1 text-2xl font-extrabold text-white">
+                      {isPublic ? "—" : `${result.litres.toFixed(1)}`}
+                      {!isPublic && (
+                        <span className="ml-1 text-xs font-normal text-muted-foreground">
+                          {fuel.unit}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-amber-500/40 bg-amber-950/30 p-3.5 shadow-inner">
+                    <p className="flex items-center gap-1 text-[11px] text-amber-300">
+                      <Fuel className="h-3.5 w-3.5 text-amber-400" /> Projected Cash Burn
+                    </p>
+                    <p className="mt-1 text-2xl font-black text-amber-400">{pkr(result.current)}</p>
+                  </div>
+                </div>
+
+                <p className="text-xs leading-relaxed text-slate-300">
+                  At {Math.round(result.monthlyKm)} KM over {days} active travel days, your annual
+                  fuel outlay reaches{" "}
+                  <strong className="text-white font-mono">{pkr(result.current * 12)}</strong> if
+                  unadjusted.
                 </p>
               </div>
             </div>
-            <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
-              At {Math.round(result.monthlyKm)} KM over {days} days, this is what your current habit
-              costs — roughly {pkr(result.current * 12)} a year if it stays the same.
-            </p>
           </div>
 
           {/* Strategy selector */}
-          <div className="rounded-2xl border bg-card p-5 shadow-sm">
-            <h4 className="mb-3 text-sm font-semibold">Pick a local saving habit</h4>
+          <div className="glass-card p-5 shadow-sm">
+            <h4 className="mb-3 text-sm font-bold text-white tracking-tight">
+              Select Savings Strategy
+            </h4>
             <div className="grid gap-2 sm:grid-cols-3">
               {strategies.map((s) => {
                 const active = s.id === strategyId;
@@ -394,107 +420,174 @@ export function CommuteCalculator() {
                       setSaved(false);
                     }}
                     aria-pressed={active}
-                    className={`flex flex-col items-start gap-1.5 rounded-xl border px-3 py-2.5 text-left transition ${
+                    className={`flex flex-col items-start gap-1.5 rounded-xl border p-3 text-left transition-all duration-200 active:scale-95 ${
                       active
-                        ? "border-primary bg-primary/15 text-primary"
-                        : "border-border bg-surface text-muted-foreground hover:border-primary/40"
+                        ? "border-emerald-500/40 bg-emerald-500/20 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.25)]"
+                        : "border-white/[0.08] bg-slate-900/60 text-slate-400 hover:border-white/[0.16] hover:text-white"
                     }`}
                   >
-                    <span className={active ? "text-primary" : "text-foreground/70"}>{s.icon}</span>
-                    <span className="text-xs font-semibold leading-tight">{s.short}</span>
+                    <span className={active ? "text-emerald-400" : "text-slate-400"}>{s.icon}</span>
+                    <span className="text-xs font-bold leading-tight">{s.short}</span>
                   </button>
                 );
               })}
             </div>
-            <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
-              {strategy.note}
-            </p>
+            <p className="mt-3 text-xs leading-relaxed text-slate-300">{strategy.note}</p>
           </div>
 
           {/* Savings badge */}
-          <div className="neon-card p-5">
+          <div className="dashboard-card p-5 sm:p-6 border-emerald-500/30">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="eyebrow">This habit saves you</p>
-                <p className="mt-1 text-3xl font-bold text-primary">{pkr(result.savings)}</p>
-                <p className="text-sm text-muted-foreground">
-                  per month · {pkr(result.yearlySavings)} a year
+                <span className="badge-safe">Targeted Monthly Liquidity</span>
+                <p className="mt-1.5 text-3xl font-extrabold text-emerald-400">
+                  {pkr(result.savings)}
+                </p>
+                <p className="text-xs text-slate-300">
+                  per month · {pkr(result.yearlySavings)} annual retainable capital
                 </p>
               </div>
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary/15 text-primary">
-                <PiggyBank className="h-6 w-6" />
-              </span>
+              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-emerald-500/40 bg-emerald-500/20 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.35)]">
+                <PiggyBank className="h-6 w-6 animate-pulse" />
+              </div>
             </div>
           </div>
 
           {/* Dual-bar comparison */}
-          <div className="rounded-2xl border bg-card p-5 shadow-sm">
-            <h4 className="mb-4 flex items-center gap-2 text-sm font-semibold">
-              <TrendingDown className="h-4 w-4 text-primary" /> Full-month burn compared
+          <div className="glass-card p-5 shadow-sm">
+            <h4 className="mb-4 flex items-center gap-2 text-sm font-bold text-white tracking-tight">
+              <TrendingDown className="h-4 w-4 text-emerald-400" /> Full-Month Burn Comparison
             </h4>
 
             <div className="space-y-5">
               {/* Current / high-cost */}
               <div>
                 <div className="mb-1.5 flex items-center justify-between text-xs">
-                  <span className="flex items-center gap-1.5 font-medium text-foreground/80">
-                    <Fuel className="h-3.5 w-3.5 text-[var(--danger)]" /> Current habit (now)
+                  <span className="flex items-center gap-1.5 font-semibold text-slate-300">
+                    <Fuel className="h-3.5 w-3.5 text-rose-400" /> Current Baseline (Now)
                   </span>
-                  <span className="font-bold text-[var(--warning)]">{pkr(result.current)}</span>
+                  <span className="font-extrabold font-mono text-amber-400">
+                    {pkr(result.current)}
+                  </span>
                 </div>
-                <div className="h-3.5 overflow-hidden rounded-full bg-secondary">
-                  <div
-                    className="h-full rounded-full transition-all duration-700"
-                    style={{
-                      width: "100%",
-                      background: "linear-gradient(90deg, var(--danger), var(--warning))",
-                    }}
-                  />
+                <div className="progress-track">
+                  <div className="progress-fill-danger" style={{ width: "100%" }} />
                 </div>
               </div>
 
               {/* Optimized */}
               <div>
                 <div className="mb-1.5 flex items-center justify-between text-xs">
-                  <span className="flex items-center gap-1.5 font-medium text-foreground/80">
+                  <span className="flex items-center gap-1.5 font-semibold text-emerald-300">
                     {strategy.icon} With {strategy.short}
                   </span>
-                  <span className="font-bold text-primary">{pkr(result.optimized)}</span>
+                  <span className="font-extrabold font-mono text-emerald-400">
+                    {pkr(result.optimized)}
+                  </span>
                 </div>
-                <div className="h-3.5 overflow-hidden rounded-full bg-secondary">
-                  <div
-                    className="h-full rounded-full transition-all duration-700"
-                    style={{
-                      width: `${optimizedPct}%`,
-                      background:
-                        "linear-gradient(90deg, color-mix(in oklab, var(--primary) 55%, transparent), var(--primary))",
-                    }}
-                  />
+                <div className="progress-track">
+                  <div className="progress-fill-emerald" style={{ width: `${optimizedPct}%` }} />
                 </div>
               </div>
             </div>
 
-            <div className="mt-4 flex items-center justify-between rounded-xl bg-primary/10 px-3 py-2.5 text-xs">
-              <span className="text-muted-foreground">Cut from your monthly burn</span>
-              <span className="font-bold text-primary">
-                −{Math.round(result.savingsPct)}% · {pkr(result.savings)}
+            <div className="mt-4 flex items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-950/20 px-3.5 py-2.5 text-xs">
+              <span className="text-slate-300">Effective Cash Reduction</span>
+              <span className="font-extrabold font-mono text-emerald-400">
+                −{Math.round(result.savingsPct)}% · {pkr(result.savings)}/mo
               </span>
             </div>
           </div>
 
-          {/* Advice footer */}
-          <div className="warn-card p-5">
-            <div className="flex items-start gap-3">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[var(--warning)]/20 text-[var(--warning)]">
-                <Lightbulb className="h-5 w-5" />
-              </span>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold">Smart tip for you</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {adviceFor(vehicle, strategy, result.savings, isPublic)}
-                </p>
+          {/* Rich Pakistani Commuter Fuel-Saving Playbook footer */}
+          <div className="dashboard-card p-5 sm:p-6 border-amber-500/30">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.08] pb-3">
+              <div className="flex items-center gap-2.5">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-amber-500/40 bg-amber-500/20 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.25)]">
+                  <Lightbulb className="h-5 w-5" />
+                </span>
+                <div>
+                  <h4 className="text-sm font-bold text-white tracking-tight">
+                    Pakistani Commuter Fuel-Saving Playbook
+                  </h4>
+                  <p className="text-xs text-muted-foreground">
+                    Hyper-localized driving & maintenance strategies for {vehicle.name}
+                  </p>
+                </div>
               </div>
+              <span className="badge-safe">Save ~{pkr(result.savings)}/mo</span>
             </div>
+
+            <p className="mt-3 text-xs leading-relaxed text-slate-300">
+              Proven, everyday practices tailored for Pakistani traffic conditions and road quality
+              to cut fuel burn by 15–25%:
+            </p>
+
+            <ul className="mt-3 space-y-2.5 text-xs">
+              <li className="flex items-start gap-2.5 rounded-xl border border-white/[0.06] bg-slate-900/60 p-3">
+                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg border border-emerald-500/30 bg-emerald-500/20 text-emerald-400 font-bold">
+                  <Gauge className="h-3.5 w-3.5" />
+                </span>
+                <div className="min-w-0">
+                  <span className="font-bold text-white">
+                    Maintain Correct Tyre Pressure at Pump Nitrogen Stands:
+                  </span>{" "}
+                  <span className="text-slate-300">
+                    Check PSI weekly at local PSO, Shell, or Total digital air/nitrogen stands (or
+                    tyre puncture shops). Under-inflated tyres increase rolling friction on potholed
+                    city asphalt, draining 5% to 8% more fuel every kilometer.
+                  </span>
+                </div>
+              </li>
+
+              <li className="flex items-start gap-2.5 rounded-xl border border-white/[0.06] bg-slate-900/60 p-3">
+                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg border border-amber-500/30 bg-amber-500/20 text-amber-400 font-bold">
+                  <Navigation className="h-3.5 w-3.5" />
+                </span>
+                <div className="min-w-0">
+                  <span className="font-bold text-white">
+                    Plan Alternate Routes to Dodge Peak-Hour Gridlocks:
+                  </span>{" "}
+                  <span className="text-slate-300">
+                    Check real-time traffic to bypass major choke points (e.g. Shahrah-e-Faisal,
+                    Canal Road, or Islamabad Expressway bottlenecks). Idling in 1st-gear clutch
+                    crawl burns up to 1.5 litres of fuel per hour with zero progress.
+                  </span>
+                </div>
+              </li>
+
+              <li className="flex items-start gap-2.5 rounded-xl border border-white/[0.06] bg-slate-900/60 p-3">
+                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg border border-emerald-500/30 bg-emerald-500/20 text-emerald-400 font-bold">
+                  <Wrench className="h-3.5 w-3.5" />
+                </span>
+                <div className="min-w-0">
+                  <span className="font-bold text-white">
+                    Stick to Regular Engine Oil & Air Filter Changes:
+                  </span>{" "}
+                  <span className="text-slate-300">
+                    Replace engine oil every 3,000–5,000 km and clean the air filter every 1,500 km.
+                    Heavy dust and urban smog rapidly choke filters, causing rich combustion and
+                    sluggish mileage.
+                  </span>
+                </div>
+              </li>
+
+              <li className="flex items-start gap-2.5 rounded-xl border border-white/[0.06] bg-slate-900/60 p-3">
+                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg border border-emerald-500/30 bg-emerald-500/20 text-emerald-400 font-bold">
+                  <Droplets className="h-3.5 w-3.5" />
+                </span>
+                <div className="min-w-0">
+                  <span className="font-bold text-white">
+                    Avoid Aggressive Sudden Acceleration in Heavy Traffic:
+                  </span>{" "}
+                  <span className="text-slate-300">
+                    Ease onto the throttle rather than gunning the engine between speed breakers and
+                    traffic signals. Smooth, progressive acceleration preserves engine momentum and
+                    cuts up to 15% off fuel consumption.
+                  </span>
+                </div>
+              </li>
+            </ul>
 
             <button
               type="button"

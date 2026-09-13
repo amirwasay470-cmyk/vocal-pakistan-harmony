@@ -40,6 +40,8 @@ import {
   type VampireResult,
 } from "@/lib/awaaz-household";
 import { BillScanner } from "@/components/awaaz/BillScanner";
+import { CyberProgressRing } from "@/components/awaaz/CyberProgressRing";
+import { CyberProgressBar } from "@/components/awaaz/CyberProgressBar";
 import type { BillScan } from "@/lib/bill-scan.functions";
 import type { AdvisorContext } from "@/lib/advisor-engine";
 
@@ -336,7 +338,7 @@ export function BillAudit({
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
-        <div className="rounded-2xl border bg-card p-5 shadow-sm">
+        <div className="dashboard-card p-5.5">
           <div className="mb-4 flex items-center justify-between gap-3">
             <h3 className="text-base font-semibold">Your latest bill</h3>
             <span className="status-badge">
@@ -560,7 +562,7 @@ export function BillAudit({
                 </p>
               </div>
 
-              <div className="rounded-2xl border bg-card p-5 shadow-sm">
+              <div className="dashboard-card p-5.5">
                 <h4 className="mb-3 text-sm font-semibold">
                   Slab-wise breakdown — {disco.name}, {disco.city}
                 </h4>
@@ -614,7 +616,7 @@ export function BillAudit({
                 </div>
               </div>
 
-              <div className="rounded-2xl border bg-card p-5 shadow-sm">
+              <div className="dashboard-card p-5.5">
                 <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                   <h4 className="text-sm font-semibold">Where your units go</h4>
                   <div className="flex items-center gap-3 text-xs text-muted-foreground">
@@ -707,24 +709,52 @@ function LifelineIndicator({ units }: { units: number }) {
   const status = lifelineStatus(units);
   const tone =
     status.tone === "good"
-      ? "neon-card"
+      ? "border border-emerald-500/50 bg-gradient-to-br from-emerald-500/15 via-slate-900/90 to-slate-950/95 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15),0_0_28px_-4px_rgba(16,185,129,0.3)] urgency-emerald"
       : status.tone === "warn"
-        ? "warn-card"
-        : "rounded-2xl border border-destructive/40 bg-destructive/10";
+        ? "border border-amber-500/50 bg-gradient-to-br from-amber-500/15 via-slate-900/90 to-slate-950/95 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15),0_0_28px_-4px_rgba(245,158,11,0.35)] urgency-amber"
+        : "border border-rose-500/60 bg-gradient-to-br from-rose-500/15 via-slate-900/90 to-slate-950/95 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15),0_0_32px_-4px_rgba(244,63,94,0.4)] urgency-crimson";
+
+  const badgeCls =
+    status.tone === "good"
+      ? "badge-safe"
+      : status.tone === "warn"
+        ? "badge-warning"
+        : "badge-critical";
+
   return (
-    <div className={`mt-5 p-4 ${tone}`}>
-      <div className="flex items-start gap-3">
-        <ShieldCheck
-          className={`mt-0.5 h-5 w-5 shrink-0 ${status.tone === "good" ? "text-primary" : status.tone === "warn" ? "text-warning" : "text-destructive"}`}
-        />
-        <div className="min-w-0">
-          <p className="text-sm font-semibold">{status.title}</p>
-          <p className="mt-1 text-xs text-muted-foreground">{status.message}</p>
-          {status.unitsToNextTier !== null && (
-            <p className="mt-2 text-xs font-semibold text-primary">
-              {Math.max(0, Math.round(status.unitsToNextTier))} units of headroom left this month.
-            </p>
-          )}
+    <div className={`mt-5 rounded-2xl p-4.5 backdrop-blur-2xl ${tone}`}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3 w-full">
+          <ShieldCheck
+            className={`mt-0.5 h-5 w-5 shrink-0 ${
+              status.tone === "good"
+                ? "text-emerald-400"
+                : status.tone === "warn"
+                  ? "text-amber-400"
+                  : "text-rose-400"
+            }`}
+          />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-sm font-bold text-white tracking-tight">{status.title}</p>
+              <span className={badgeCls}>
+                {status.tone === "good"
+                  ? "Protected"
+                  : status.tone === "warn"
+                    ? "Near Surcharge"
+                    : "Surcharge Active"}
+              </span>
+            </div>
+            <p className="mt-1 text-xs text-slate-300 leading-relaxed">{status.message}</p>
+            <div className="mt-3">
+              <CyberProgressBar
+                currentUnits={units}
+                maxUnits={700}
+                showHeadroom={true}
+                label="NEPRA Slab Boundary Meter"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -732,44 +762,80 @@ function LifelineIndicator({ units }: { units: number }) {
 }
 
 function BudgetGuardCard({ verdict, budget }: { verdict: BudgetVerdict; budget: number }) {
-  const cls =
-    verdict.status === "over"
-      ? "rounded-2xl border border-destructive/45 bg-destructive/10"
-      : verdict.status === "close"
-        ? "warn-card"
-        : "neon-card";
-  const bar =
-    verdict.status === "over"
-      ? "bg-destructive"
-      : verdict.status === "close"
-        ? "bg-warning"
-        : "bg-primary";
+  const isOver = verdict.status === "over";
+  const isClose = verdict.status === "close";
+
+  const cls = isOver
+    ? "border border-rose-500/60 bg-gradient-to-br from-rose-500/15 via-slate-900/90 to-slate-950/95 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.18),0_0_32px_-4px_rgba(244,63,94,0.4)] urgency-crimson"
+    : isClose
+      ? "border border-amber-500/50 bg-gradient-to-br from-amber-500/15 via-slate-900/90 to-slate-950/95 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.18),0_0_28px_-4px_rgba(245,158,11,0.35)] urgency-amber"
+      : "border border-emerald-500/50 bg-gradient-to-br from-emerald-500/15 via-slate-900/90 to-slate-950/95 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.18),0_0_28px_-4px_rgba(16,185,129,0.3)] urgency-emerald";
+
+  const barCls = isOver
+    ? "progress-fill-danger"
+    : isClose
+      ? "progress-fill-amber"
+      : "progress-fill-emerald";
+
+  const badgeCls = isOver ? "badge-critical" : isClose ? "badge-warning" : "badge-safe";
+
   return (
-    <div className={`${cls} p-5`}>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="flex items-center gap-2 text-sm font-semibold">
-          <Wallet className="h-4 w-4" /> Monthly budget guard
+    <div className={`rounded-2xl p-5 backdrop-blur-2xl ${cls}`}>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.08] pb-3">
+        <p className="flex items-center gap-2 text-sm font-bold text-white tracking-tight">
+          <Wallet
+            className={`h-4 w-4 ${isOver ? "text-rose-400" : isClose ? "text-amber-400" : "text-emerald-400"}`}
+          />
+          Monthly Household Budget Guard
         </p>
-        <span className={verdict.status === "safe" ? "status-badge" : "warn-badge"}>
-          {verdict.headline}
-        </span>
+        <span className={badgeCls}>{verdict.headline}</span>
       </div>
-      <p className="mt-2 text-2xl font-bold">
-        {Math.round(verdict.usedPct)}%{" "}
-        <span className="text-sm font-normal text-muted-foreground">of {pkr(budget)} limit</span>
-      </p>
-      <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-secondary">
-        <div
-          className={`h-full rounded-full transition-all duration-700 ${bar}`}
-          style={{ width: `${Math.min(100, verdict.usedPct)}%` }}
+
+      <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-[auto_minmax(0,1fr)] items-center">
+        {/* SVG Circular Progress Ring */}
+        <CyberProgressRing
+          value={Math.round(verdict.usedPct)}
+          max={100}
+          label="Budget Exhaustion"
+          unit="%"
+          size={130}
+          icon={Wallet}
+          thresholds={{ warning: 75, critical: 95 }}
+          subtext={`Cap: ${pkr(budget)}`}
         />
+
+        {/* Detailed Breakdown */}
+        <div className="space-y-3">
+          <div>
+            <span className="text-xs font-medium uppercase tracking-wider text-slate-400">
+              Projected Monthly Spend
+            </span>
+            <p className="mt-0.5 text-2xl font-black tracking-tight text-white">
+              {pkr(Math.round((budget * verdict.usedPct) / 100))}{" "}
+              <span className="text-xs font-normal text-muted-foreground">
+                of {pkr(budget)} limit
+              </span>
+            </p>
+          </div>
+
+          <div className="progress-track">
+            <div className={barCls} style={{ width: `${Math.min(100, verdict.usedPct)}%` }} />
+          </div>
+
+          <p className="text-xs leading-relaxed text-slate-300">
+            {verdict.difference > 0 ? (
+              <span className="font-semibold text-rose-400">
+                Projected bill is {pkr(verdict.difference)} above your limit!
+              </span>
+            ) : (
+              <span className="font-semibold text-emerald-400">
+                You have {pkr(Math.abs(verdict.difference))} of financial room left.
+              </span>
+            )}{" "}
+            {verdict.advice}
+          </p>
+        </div>
       </div>
-      <p className="mt-3 text-sm">
-        {verdict.difference > 0
-          ? `Projected bill is ${pkr(verdict.difference)} above your limit.`
-          : `You have ${pkr(Math.abs(verdict.difference))} of room left.`}{" "}
-        {verdict.advice}
-      </p>
     </div>
   );
 }
@@ -851,13 +917,13 @@ export function SectionHead({
   subtitle: string;
 }) {
   return (
-    <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3">
-      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
+    <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3.5">
+      <span className="relative grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-emerald-500/40 bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
         {icon}
       </span>
       <div className="min-w-0">
-        <h2 className="text-lg font-bold sm:text-xl">{title}</h2>
-        <p className="text-sm text-muted-foreground">{subtitle}</p>
+        <h2 className="text-lg font-bold tracking-tight text-white sm:text-xl">{title}</h2>
+        <p className="text-xs text-muted-foreground sm:text-sm">{subtitle}</p>
       </div>
     </div>
   );
@@ -866,7 +932,7 @@ export function SectionHead({
 export function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-medium text-muted-foreground">{label}</span>
+      <span className="mb-1.5 block text-xs font-medium text-slate-300">{label}</span>
       {children}
     </label>
   );
@@ -875,7 +941,7 @@ export function Field({ label, children }: { label: string; children: React.Reac
 function MiniField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-[11px] text-muted-foreground">{label}</span>
+      <span className="mb-1 block text-[11px] font-medium text-slate-400">{label}</span>
       {children}
     </label>
   );
@@ -884,10 +950,20 @@ function MiniField({ label, children }: { label: string; children: React.ReactNo
 export function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
     <div
-      className={`rounded-2xl border p-3 ${accent ? "border-primary/40 bg-primary/10" : "bg-card"}`}
+      className={`group relative overflow-hidden rounded-2xl border p-4 transition-all duration-300 hover:scale-[1.01] ${
+        accent
+          ? "border-emerald-500/50 bg-gradient-to-br from-emerald-500/15 via-slate-900/85 to-slate-950/95 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.18),0_8px_30px_rgba(0,0,0,0.45)] hover:border-emerald-400 hover:shadow-[0_0_25px_rgba(16,185,129,0.25)]"
+          : "border-slate-800/80 bg-slate-900/80 backdrop-blur-xl shadow-[inset_0_1px_0_0_rgba(255,255,255,0.12),0_8px_30px_rgba(0,0,0,0.4)] hover:border-emerald-500/50 hover:shadow-[0_0_25px_rgba(16,185,129,0.15)]"
+      }`}
     >
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="mt-1 truncate text-lg font-bold">{value}</p>
+      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{label}</p>
+      <p
+        className={`mt-1.5 truncate font-mono text-xl font-black tracking-tight ${
+          accent ? "text-emerald-400" : "text-white"
+        }`}
+      >
+        {value}
+      </p>
     </div>
   );
 }
@@ -902,12 +978,12 @@ export function EmptyState({
   text: string;
 }) {
   return (
-    <div className="grid place-items-center rounded-2xl border border-dashed bg-card/60 p-10 text-center">
-      <span className="mb-3 grid h-12 w-12 place-items-center rounded-full bg-secondary text-primary">
+    <div className="grid place-items-center rounded-2xl border border-white/[0.08] bg-slate-900/50 backdrop-blur-md p-10 text-center shadow-inner">
+      <span className="mb-3.5 grid h-12 w-12 place-items-center rounded-2xl border border-emerald-500/30 bg-emerald-500/15 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
         {icon}
       </span>
-      <h3 className="text-base font-semibold">{title}</h3>
-      <p className="mt-1 max-w-sm text-sm text-muted-foreground">{text}</p>
+      <h3 className="text-base font-bold text-white tracking-tight">{title}</h3>
+      <p className="mt-1.5 max-w-sm text-xs leading-relaxed text-muted-foreground">{text}</p>
     </div>
   );
 }
