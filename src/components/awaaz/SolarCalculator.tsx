@@ -82,11 +82,7 @@ export function SolarCalculator({ monthlyUnits, discoId }: Props) {
               />
             </Field>
             <Field label="City (for sunlight hours)">
-              <select
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                className="input-base"
-              >
+              <select value={city} onChange={(e) => setCity(e.target.value)} className="input-base">
                 {sunlightByCity.map((s) => (
                   <option key={s.city} value={s.city}>
                     {s.city} ({s.hours}h avg)
@@ -95,12 +91,7 @@ export function SolarCalculator({ monthlyUnits, discoId }: Props) {
               </select>
             </Field>
             <Field label="DISCO (for tariff)">
-              <select
-                value={discoId}
-                onChange={(e) => {}}
-                className="input-base"
-                disabled
-              >
+              <select value={discoId} onChange={(e) => {}} className="input-base" disabled>
                 {discos.map((d) => (
                   <option key={d.id} value={d.id}>
                     {d.name} ({d.city})
@@ -121,7 +112,9 @@ export function SolarCalculator({ monthlyUnits, discoId }: Props) {
           </div>
 
           <div className="mt-4">
-            <p className="mb-2 text-xs font-medium text-muted-foreground">Solar system quality tier</p>
+            <p className="mb-2 text-xs font-medium text-muted-foreground">
+              Solar system quality tier
+            </p>
             <div className="grid grid-cols-3 gap-2">
               {(["entry", "balanced", "premium"] as SolarTier[]).map((t) => (
                 <button
@@ -160,7 +153,9 @@ export function SolarCalculator({ monthlyUnits, discoId }: Props) {
                 <p className="font-semibold text-primary">Recommended size</p>
                 <p className="mt-0.5 text-lg font-bold">{recommendedKw} kW system</p>
                 <p className="text-muted-foreground">
-                  {Math.ceil((recommendedKw * 1000) / 550)} panels · covers ~{Math.round((recommendedKw * sunlight.hours * 0.77 * 30) / units * 100)}% of usage
+                  {Math.ceil((recommendedKw * 1000) / 550)} panels · covers ~
+                  {Math.round(((recommendedKw * sunlight.hours * 0.77 * 30) / units) * 100)}% of
+                  usage
                 </p>
               </div>
             </div>
@@ -174,9 +169,9 @@ export function SolarCalculator({ monthlyUnits, discoId }: Props) {
 
           <p className="mt-3 flex items-start gap-2 rounded-xl bg-secondary/50 p-3 text-xs text-muted-foreground">
             <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            Pricing uses 2025 Pakistani market estimates: panels Rs {solarPricing.panelPerWatt[tier]}/W,
-            inverter Rs {solarPricing.inverterPerWatt[tier]}/W, battery Rs {solarPricing.batteryPerKwh.toLocaleString()}/kWh,
-            plus 12% installation.
+            Pricing uses 2025 Pakistani market estimates: panels Rs{" "}
+            {solarPricing.panelPerWatt[tier]}/W, inverter Rs {solarPricing.inverterPerWatt[tier]}/W,
+            battery Rs {solarPricing.batteryPerKwh.toLocaleString()}/kWh, plus 12% installation.
           </p>
         </div>
 
@@ -195,9 +190,7 @@ export function SolarCalculator({ monthlyUnits, discoId }: Props) {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="eyebrow">Recommended system</p>
-                    <p className="mt-1 text-3xl font-bold text-primary">
-                      {calculated.kw} kW
-                    </p>
+                    <p className="mt-1 text-3xl font-bold text-primary">{calculated.kw} kW</p>
                     <p className="text-sm text-muted-foreground">
                       {calculated.panels} panels · {tierLabel[calculated.tier]}
                     </p>
@@ -259,7 +252,8 @@ export function SolarCalculator({ monthlyUnits, discoId }: Props) {
               {/* Battery & backup */}
               <div className="rounded-2xl border bg-card p-5 shadow-sm">
                 <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold">
-                  <BatteryCharging className="h-4 w-4 text-primary" /> Battery & load-shedding backup
+                  <BatteryCharging className="h-4 w-4 text-primary" /> Battery & load-shedding
+                  backup
                 </h4>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                   <Stat label="Battery capacity" value={`${calculated.batteryKwh} kWh`} />
@@ -307,13 +301,21 @@ export function SolarCalculator({ monthlyUnits, discoId }: Props) {
                   <FlowRow
                     label="Self-consumed (daytime use)"
                     value={`${Math.round(calculated.selfConsumed)} kWh`}
-                    pct={calculated.monthlyGeneration > 0 ? (calculated.selfConsumed / calculated.monthlyGeneration) * 100 : 0}
+                    pct={
+                      calculated.monthlyGeneration > 0
+                        ? (calculated.selfConsumed / calculated.monthlyGeneration) * 100
+                        : 0
+                    }
                     color="bg-primary/60"
                   />
                   <FlowRow
                     label="Exported to grid (net-metering)"
                     value={`${Math.round(calculated.exported)} kWh`}
-                    pct={calculated.monthlyGeneration > 0 ? (calculated.exported / calculated.monthlyGeneration) * 100 : 0}
+                    pct={
+                      calculated.monthlyGeneration > 0
+                        ? (calculated.exported / calculated.monthlyGeneration) * 100
+                        : 0
+                    }
                     color="bg-teal"
                   />
                 </div>
@@ -330,10 +332,7 @@ export function SolarCalculator({ monthlyUnits, discoId }: Props) {
                     value={`${Math.round(calculated.co2SavedYearly)} kg`}
                     accent
                   />
-                  <Stat
-                    label="Equivalent to"
-                    value={`${calculated.treesEquivalent} trees`}
-                  />
+                  <Stat label="Equivalent to" value={`${calculated.treesEquivalent} trees`} />
                 </div>
               </div>
             </div>

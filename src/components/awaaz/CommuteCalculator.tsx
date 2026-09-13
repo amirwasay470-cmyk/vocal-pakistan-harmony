@@ -56,7 +56,13 @@ const vehicles: Vehicle[] = [
   { id: "bike125", name: "125cc Bike", icon: <Bike className="h-5 w-5" />, kmPerLitre: 40 },
   { id: "smallCar", name: "Small Car (1000cc)", icon: <Car className="h-5 w-5" />, kmPerLitre: 14 },
   { id: "suv", name: "Sedan / SUV", icon: <Car className="h-5 w-5" />, kmPerLitre: 9 },
-  { id: "public", name: "Public Transport / Van", icon: <Bus className="h-5 w-5" />, kmPerLitre: null, farePerKm: 14 },
+  {
+    id: "public",
+    name: "Public Transport / Van",
+    icon: <Bus className="h-5 w-5" />,
+    kmPerLitre: null,
+    farePerKm: 14,
+  },
 ];
 
 /** Live reference rates for Pakistan. */
@@ -193,10 +199,14 @@ export function CommuteCalculator() {
                     : "border-border bg-surface hover:border-primary/40"
                 }`}
               >
-                <span className={`flex items-center gap-1.5 text-[11px] font-medium ${active ? "text-primary" : "text-muted-foreground"}`}>
+                <span
+                  className={`flex items-center gap-1.5 text-[11px] font-medium ${active ? "text-primary" : "text-muted-foreground"}`}
+                >
                   <Droplets className="h-3 w-3" /> {f.name}
                 </span>
-                <span className={`mt-0.5 text-sm font-bold ${active ? "text-primary" : "text-foreground"}`}>
+                <span
+                  className={`mt-0.5 text-sm font-bold ${active ? "text-primary" : "text-foreground"}`}
+                >
                   Rs {f.price.toLocaleString("en-PK")}
                 </span>
                 <span className="text-[10px] text-muted-foreground">per {f.unit}</span>
@@ -315,13 +325,21 @@ export function CommuteCalculator() {
 
           {/* Quick consumption chips */}
           <div className="mt-5 grid grid-cols-3 gap-2">
-            <MiniStat icon={<Gauge className="h-3.5 w-3.5" />} label="Monthly KM" value={`${Math.round(result.monthlyKm)}`} />
+            <MiniStat
+              icon={<Gauge className="h-3.5 w-3.5" />}
+              label="Monthly KM"
+              value={`${Math.round(result.monthlyKm)}`}
+            />
             <MiniStat
               icon={<Droplets className="h-3.5 w-3.5" />}
               label="Fuel used"
               value={isPublic ? "—" : `${result.litres.toFixed(1)} ${fuel.unit}`}
             />
-            <MiniStat icon={<Fuel className="h-3.5 w-3.5" />} label="Rate" value={isPublic ? "Fare" : `Rs ${Math.round(fuelPrice)}`} />
+            <MiniStat
+              icon={<Fuel className="h-3.5 w-3.5" />}
+              label="Rate"
+              value={isPublic ? "Fare" : `Rs ${Math.round(fuelPrice)}`}
+            />
           </div>
         </div>
 
@@ -339,18 +357,25 @@ export function CommuteCalculator() {
                 </p>
                 <p className="mt-1 text-2xl font-bold">
                   {isPublic ? "—" : `${result.litres.toFixed(1)}`}
-                  {!isPublic && <span className="ml-1 text-sm font-medium text-muted-foreground">{fuel.unit}</span>}
+                  {!isPublic && (
+                    <span className="ml-1 text-sm font-medium text-muted-foreground">
+                      {fuel.unit}
+                    </span>
+                  )}
                 </p>
               </div>
               <div className="rounded-xl border bg-surface p-3">
                 <p className="flex items-center gap-1 text-[11px] text-muted-foreground">
                   <Fuel className="h-3 w-3" /> Projected cash cost
                 </p>
-                <p className="mt-1 text-2xl font-bold text-[var(--warning)]">{pkr(result.current)}</p>
+                <p className="mt-1 text-2xl font-bold text-[var(--warning)]">
+                  {pkr(result.current)}
+                </p>
               </div>
             </div>
             <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
-              At {Math.round(result.monthlyKm)} KM over {days} days, this is what your current habit costs — roughly {pkr(result.current * 12)} a year if it stays the same.
+              At {Math.round(result.monthlyKm)} KM over {days} days, this is what your current habit
+              costs — roughly {pkr(result.current * 12)} a year if it stays the same.
             </p>
           </div>
 
@@ -381,7 +406,9 @@ export function CommuteCalculator() {
                 );
               })}
             </div>
-            <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">{strategy.note}</p>
+            <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
+              {strategy.note}
+            </p>
           </div>
 
           {/* Savings badge */}
@@ -491,15 +518,7 @@ export function CommuteCalculator() {
   );
 }
 
-function MiniStat({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
+function MiniStat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div className="rounded-xl border bg-surface p-2.5">
       <p className="flex items-center gap-1 text-[10px] text-muted-foreground">

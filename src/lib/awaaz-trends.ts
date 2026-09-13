@@ -149,7 +149,7 @@ export function essentialsBoard(city: City, market: BazaarMarket): EssentialRow[
   const mult = MARKET_MULT[market.kind] ?? 1.05;
   return essentials.map((e) => {
     const trend = weeklyTrend(`${e.id}|${market.id}`, city);
-    const price = Math.round((e.base[city] * mult) / 1) ;
+    const price = Math.round((e.base[city] * mult) / 1);
     const lastWeek = Math.round(price / (1 + trend.pct / 100));
     return { id: e.id, name: e.name, urdu: e.urdu, unit: e.unit, price, lastWeek, trend };
   });

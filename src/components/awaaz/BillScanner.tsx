@@ -103,7 +103,11 @@ export function BillScanner({
           disabled={busy}
           className="btn-primary disabled:opacity-60"
         >
-          {busy ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+          {busy ? (
+            <LoaderCircle className="h-4 w-4 animate-spin" />
+          ) : (
+            <Camera className="h-4 w-4" />
+          )}
           {busy ? "Reading bill…" : "Take photo"}
         </button>
         <button

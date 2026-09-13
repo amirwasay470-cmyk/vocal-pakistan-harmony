@@ -152,12 +152,33 @@ export type SolarResult = {
   summary: string;
 };
 
-export function calculateSolar(type: SolarType, units: number, systemKw: number, batteryKwh: number, disco: Disco): SolarResult {
-  if (type === "none") return { generation: 0, selfConsumed: 0, exported: 0, billAfterSolar: 0, monthlySavings: 0, independence: 0, backupHours: 0, summary: "" };
+export function calculateSolar(
+  type: SolarType,
+  units: number,
+  systemKw: number,
+  batteryKwh: number,
+  disco: Disco,
+): SolarResult {
+  if (type === "none")
+    return {
+      generation: 0,
+      selfConsumed: 0,
+      exported: 0,
+      billAfterSolar: 0,
+      monthlySavings: 0,
+      independence: 0,
+      backupHours: 0,
+      summary: "",
+    };
   const generation = systemKw * 5 * 0.77 * 30;
   const daytimeLoad = units * 0.45;
   const batteryBuffer = batteryKwh * 30 * 0.8;
-  const selfConsumed = type === "on-grid" ? Math.min(generation, daytimeLoad) : type === "hybrid" ? Math.min(generation, daytimeLoad + batteryBuffer) : Math.min(generation, units);
+  const selfConsumed =
+    type === "on-grid"
+      ? Math.min(generation, daytimeLoad)
+      : type === "hybrid"
+        ? Math.min(generation, daytimeLoad + batteryBuffer)
+        : Math.min(generation, units);
   const exported = type === "off-grid" ? 0 : Math.max(0, generation - selfConsumed);
   const imports = Math.max(0, units - selfConsumed);
   const afterRows = slabBreakdownFor(imports, disco.slabs);
@@ -165,11 +186,28 @@ export function calculateSolar(type: SolarType, units: number, systemKw: number,
   const baseRows = slabBreakdownFor(units, disco.slabs);
   const baseEnergy = baseRows.reduce((sum, row) => sum + row.amount, 0);
   const baseBill = baseEnergy * (1 + disco.taxRate) + disco.fixedCharges;
-  const solarBill = Math.max(0, afterEnergy * (1 + disco.taxRate) + disco.fixedCharges - exported * disco.slabs.at(-1)!.rate * 0.6);
-  const backupHours = batteryKwh * 0.8 / 1.5;
-  const independence = units ? selfConsumed / units * 100 : 0;
-  const summary = type === "off-grid" ? `${Math.round(independence)}% grid-independent with approximately ${backupHours.toFixed(1)} hours of essential-load backup.` : `${Math.round(selfConsumed)} kWh offsets household use and ${Math.round(exported)} kWh is exported for net-metering credit.`;
-  return { generation, selfConsumed, exported, billAfterSolar: solarBill, monthlySavings: baseBill - solarBill, independence, backupHours, summary };
+  const solarBill = Math.max(
+    0,
+    afterEnergy * (1 + disco.taxRate) +
+      disco.fixedCharges -
+      exported * disco.slabs.at(-1)!.rate * 0.6,
+  );
+  const backupHours = (batteryKwh * 0.8) / 1.5;
+  const independence = units ? (selfConsumed / units) * 100 : 0;
+  const summary =
+    type === "off-grid"
+      ? `${Math.round(independence)}% grid-independent with approximately ${backupHours.toFixed(1)} hours of essential-load backup.`
+      : `${Math.round(selfConsumed)} kWh offsets household use and ${Math.round(exported)} kWh is exported for net-metering credit.`;
+  return {
+    generation,
+    selfConsumed,
+    exported,
+    billAfterSolar: solarBill,
+    monthlySavings: baseBill - solarBill,
+    independence,
+    backupHours,
+    summary,
+  };
 }
 
 export type Recipe = {
@@ -340,12 +378,12 @@ export type GroceryItem = {
 export const cities = ["Karachi", "Lahore", "Islamabad"] as const;
 export type City = (typeof cities)[number];
 
-const mk = (
-  market: string,
-  price: number,
-  distanceKm: number,
-  note: string,
-): MarketPrice => ({ market, price, distanceKm, note });
+const mk = (market: string, price: number, distanceKm: number, note: string): MarketPrice => ({
+  market,
+  price,
+  distanceKm,
+  note,
+});
 
 export const groceries: GroceryItem[] = [
   {

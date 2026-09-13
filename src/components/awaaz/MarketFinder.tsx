@@ -25,7 +25,16 @@ import { SectionHead, EmptyState, Stat } from "./BillAudit";
 
 type ListEntry = { key: string; name: string; qty: number; card: PriceCard };
 
-const starters = ["Atta", "Sugar", "Tomatoes", "Dahi (Yogurt)", "Cooking Oil", "Daal Chana", "Chicken", "Milk"];
+const starters = [
+  "Atta",
+  "Sugar",
+  "Tomatoes",
+  "Dahi (Yogurt)",
+  "Cooking Oil",
+  "Daal Chana",
+  "Chicken",
+  "Milk",
+];
 
 export function MarketFinder() {
   const [city, setCity] = useState<City>("Karachi");
@@ -51,17 +60,14 @@ export function MarketFinder() {
   const addToList = (card: PriceCard) => {
     setList((l) => {
       const found = l.find((e) => e.key === card.id);
-      if (found)
-        return l.map((e) => (e.key === card.id ? { ...e, qty: e.qty + 1 } : e));
+      if (found) return l.map((e) => (e.key === card.id ? { ...e, qty: e.qty + 1 } : e));
       return [...l, { key: card.id, name: card.name, qty: 1, card }];
     });
   };
 
   const setQty = (key: string, delta: number) =>
     setList((l) =>
-      l
-        .map((e) => (e.key === key ? { ...e, qty: e.qty + delta } : e))
-        .filter((e) => e.qty > 0),
+      l.map((e) => (e.key === key ? { ...e, qty: e.qty + delta } : e)).filter((e) => e.qty > 0),
     );
 
   const reset = () => {
@@ -105,7 +111,11 @@ export function MarketFinder() {
           [
             { id: "compare", label: "Compare Prices", icon: Search },
             { id: "bazaar", label: "Bazaar Tracker", icon: LineChart },
-            { id: "list", label: `My List${list.length ? ` (${list.length})` : ""}`, icon: ListChecks },
+            {
+              id: "list",
+              label: `My List${list.length ? ` (${list.length})` : ""}`,
+              icon: ListChecks,
+            },
           ] as const
         ).map((t) => {
           const Icon = t.icon;
@@ -115,7 +125,9 @@ export function MarketFinder() {
               key={t.id}
               onClick={() => setView(t.id)}
               className={`inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold transition-all active:scale-[0.98] ${
-                active ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-secondary"
+                active
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:bg-secondary"
               }`}
             >
               <Icon className="h-4 w-4" />
@@ -213,7 +225,9 @@ export function MarketFinder() {
                   <div key={card.id} className="tab-enter rounded-2xl border bg-card p-5 shadow-sm">
                     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
                       <div className="min-w-0">
-                        <h4 className="truncate text-base font-semibold tracking-tight">{card.name}</h4>
+                        <h4 className="truncate text-base font-semibold tracking-tight">
+                          {card.name}
+                        </h4>
                         <p className="text-xs text-muted-foreground">
                           {card.urdu !== "—" ? `${card.urdu} · ` : ""}
                           {card.unit} · {city}
@@ -226,7 +240,8 @@ export function MarketFinder() {
 
                     <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-400">
                       <BadgeCheck className="h-3.5 w-3.5" />
-                      Verified {card.verifiedMinutesAgo} minutes ago by {card.verifierName} in {city}
+                      Verified {card.verifiedMinutesAgo} minutes ago by {card.verifierName} in{" "}
+                      {city}
                     </p>
 
                     <div className="mt-3 space-y-2">
@@ -256,10 +271,7 @@ export function MarketFinder() {
                     </p>
 
                     <div className="mt-4 flex flex-wrap gap-2">
-                      <button
-                        onClick={() => addToList(card)}
-                        className="btn-primary min-h-11"
-                      >
+                      <button onClick={() => addToList(card)} className="btn-primary min-h-11">
                         {inList ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                         {inList ? "Added — add one more" : "Add to Shopping List"}
                       </button>
@@ -447,9 +459,10 @@ export function MarketFinder() {
           </div>
 
           <p className="rounded-2xl bg-primary/10 p-4 text-sm">
-            Shopping this route saves <strong>{pkr(worstTotal - bestTotal)}</strong> this trip — about{" "}
-            <strong>{pkr((worstTotal - bestTotal) * 4)}</strong> a month. Rates are community-shared
-            sample prices for {city}, meant for comparison rather than live billing.
+            Shopping this route saves <strong>{pkr(worstTotal - bestTotal)}</strong> this trip —
+            about <strong>{pkr((worstTotal - bestTotal) * 4)}</strong> a month. Rates are
+            community-shared sample prices for {city}, meant for comparison rather than live
+            billing.
           </p>
 
           <button onClick={reset} className="btn-ghost min-h-11">

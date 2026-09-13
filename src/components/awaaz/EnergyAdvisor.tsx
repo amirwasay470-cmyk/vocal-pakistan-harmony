@@ -1,11 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  Sparkles,
-  X,
-  Send,
-  MessageCircle,
-  Zap,
-} from "lucide-react";
+import { Sparkles, X, Send, MessageCircle, Zap } from "lucide-react";
 import {
   generateAdvice,
   SUGGESTION_CHIPS,
@@ -59,19 +53,22 @@ export function EnergyAdvisor({ context, mode }: EnergyAdvisorProps) {
     setInput("");
     setIsTyping(true);
 
-    setTimeout(() => {
-      const response = generateAdvice(text, context);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          content: response.urdu,
-          parsed: response,
-        },
-      ]);
-      setIsTyping(false);
-    }, 500 + Math.random() * 400);
+    setTimeout(
+      () => {
+        const response = generateAdvice(text, context);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content: response.urdu,
+            parsed: response,
+          },
+        ]);
+        setIsTyping(false);
+      },
+      500 + Math.random() * 400,
+    );
   }
 
   const contextSummary = context ? buildSummary(context) : "No audit yet";

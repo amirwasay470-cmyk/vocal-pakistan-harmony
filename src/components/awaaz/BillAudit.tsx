@@ -84,7 +84,11 @@ const reductionByAppliance: Record<string, number> = {
 
 const reductionFor = (id: string) => reductionByAppliance[id] ?? 0.15;
 
-export function BillAudit({ onContextChange }: { onContextChange?: (ctx: AdvisorContext) => void }) {
+export function BillAudit({
+  onContextChange,
+}: {
+  onContextChange?: (ctx: AdvisorContext) => void;
+}) {
   const [appliances, setAppliances] = useState<Appliance[]>(defaultAppliances);
   const [preset, setPreset] = useState<PresetId | null>(null);
   const [discoId, setDiscoId] = useState("k-electric");
@@ -132,7 +136,7 @@ export function BillAudit({ onContextChange }: { onContextChange?: (ctx: Advisor
     );
   };
 
-  const usePreset = (id: PresetId) => {
+  const handleApplyPreset = (id: PresetId) => {
     const p = householdPresets.find((h) => h.id === id)!;
     const list = applyPreset(p);
     setAppliances(list);
@@ -143,7 +147,14 @@ export function BillAudit({ onContextChange }: { onContextChange?: (ctx: Advisor
 
   const toggleStandby = (id: string) =>
     setStandby((list) =>
-      list.map((d) => (d.id === id ? { ...d, qty: d.qty > 0 ? 0 : (defaultStandbyDevices.find((x) => x.id === id)?.qty ?? 1) } : d)),
+      list.map((d) =>
+        d.id === id
+          ? {
+              ...d,
+              qty: d.qty > 0 ? 0 : (defaultStandbyDevices.find((x) => x.id === id)?.qty ?? 1),
+            }
+          : d,
+      ),
     );
 
   const reset = () => {
@@ -300,12 +311,13 @@ export function BillAudit({ onContextChange }: { onContextChange?: (ctx: Advisor
               <button
                 key={p.id}
                 type="button"
-                onClick={() => usePreset(p.id)}
+                onClick={() => handleApplyPreset(p.id)}
                 aria-pressed={active}
                 className={`preset-chip ${active ? "preset-chip-active" : ""}`}
               >
                 <span className="text-sm font-bold">
-                  {p.label} <span className="text-xs font-normal text-muted-foreground">{p.urdu}</span>
+                  {p.label}{" "}
+                  <span className="text-xs font-normal text-muted-foreground">{p.urdu}</span>
                 </span>
                 <span className="text-xs text-muted-foreground">{p.people}</span>
                 <span className="mt-1 text-xs font-semibold text-primary">
@@ -653,9 +665,7 @@ export function BillAudit({ onContextChange }: { onContextChange?: (ctx: Advisor
                 <p className="mt-4 rounded-xl bg-primary/10 p-3 text-sm">
                   Follow every appliance tip and your monthly usage drops to about{" "}
                   <strong>
-                    {Math.round(
-                      result.perAppliance.reduce((s, p) => s + p.optimizedUnits, 0),
-                    )}{" "}
+                    {Math.round(result.perAppliance.reduce((s, p) => s + p.optimizedUnits, 0))}{" "}
                     units
                   </strong>{" "}
                   — roughly{" "}
@@ -871,15 +881,7 @@ function MiniField({ label, children }: { label: string; children: React.ReactNo
   );
 }
 
-export function Stat({
-  label,
-  value,
-  accent,
-}: {
-  label: string;
-  value: string;
-  accent?: boolean;
-}) {
+export function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
     <div
       className={`rounded-2xl border p-3 ${accent ? "border-primary/40 bg-primary/10" : "bg-card"}`}

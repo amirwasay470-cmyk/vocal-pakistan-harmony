@@ -42,8 +42,20 @@ type Slab = {
 const slabs: Slab[] = [
   { id: "protectedLow", name: "Protected · low", band: "Protected", rate: 200, fixed: 10 },
   { id: "protectedHigh", name: "Protected · high", band: "Protected", rate: 350, fixed: 10 },
-  { id: "nonProtectedMid", name: "Non-protected · mid", band: "Non-protected", rate: 1500, fixed: 460 },
-  { id: "nonProtectedHigh", name: "Non-protected · top", band: "Non-protected", rate: 4200, fixed: 460 },
+  {
+    id: "nonProtectedMid",
+    name: "Non-protected · mid",
+    band: "Non-protected",
+    rate: 1500,
+    fixed: 460,
+  },
+  {
+    id: "nonProtectedHigh",
+    name: "Non-protected · top",
+    band: "Non-protected",
+    rate: 4200,
+    fixed: 460,
+  },
 ];
 
 type CookingLoad = {
@@ -174,15 +186,23 @@ export function GasCookingCalculator() {
             <span className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
               <Cylinder className="h-3 w-3" /> LPG Cylinder (11.8 kg)
             </span>
-            <span className="mt-0.5 block text-sm font-bold text-foreground">Rs {CYLINDER_PRICE.toLocaleString("en-PK")}</span>
-            <span className="text-[10px] text-muted-foreground">≈ Rs {CYLINDER_PER_KG.toFixed(2)}/kg</span>
+            <span className="mt-0.5 block text-sm font-bold text-foreground">
+              Rs {CYLINDER_PRICE.toLocaleString("en-PK")}
+            </span>
+            <span className="text-[10px] text-muted-foreground">
+              ≈ Rs {CYLINDER_PER_KG.toFixed(2)}/kg
+            </span>
           </div>
           <div className="rounded-xl border border-border bg-surface px-3 py-2.5">
             <span className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
               <Cable className="h-3 w-3" /> Piped Sui Gas (SSGC/SNGPL)
             </span>
-            <span className="mt-0.5 block text-sm font-bold text-foreground">Rs 200 – 4,200 / MMBTU</span>
-            <span className="text-[10px] text-muted-foreground">Protected to non-protected slabs + fixed charges</span>
+            <span className="mt-0.5 block text-sm font-bold text-foreground">
+              Rs 200 – 4,200 / MMBTU
+            </span>
+            <span className="text-[10px] text-muted-foreground">
+              Protected to non-protected slabs + fixed charges
+            </span>
           </div>
         </div>
       </div>
@@ -195,10 +215,18 @@ export function GasCookingCalculator() {
           {/* Method selector */}
           <p className="mb-2 text-xs font-medium text-muted-foreground">Main cooking method</p>
           <div className="mb-5 grid grid-cols-2 gap-2">
-            {([
-              { id: "lpg" as MethodId, name: "Mostly LPG Cylinder", icon: <Cylinder className="h-5 w-5" /> },
-              { id: "pipeline" as MethodId, name: "Piped Sui Gas", icon: <Cable className="h-5 w-5" /> },
-            ]).map((m) => {
+            {[
+              {
+                id: "lpg" as MethodId,
+                name: "Mostly LPG Cylinder",
+                icon: <Cylinder className="h-5 w-5" />,
+              },
+              {
+                id: "pipeline" as MethodId,
+                name: "Piped Sui Gas",
+                icon: <Cable className="h-5 w-5" />,
+              },
+            ].map((m) => {
               const active = m.id === method;
               return (
                 <button
@@ -348,7 +376,9 @@ export function GasCookingCalculator() {
                 <p className="flex items-center gap-1 text-[11px] text-muted-foreground">
                   <Flame className="h-3 w-3" /> Total cash burn
                 </p>
-                <p className="mt-1 text-2xl font-bold text-[var(--warning)]">{pkr(result.current)}</p>
+                <p className="mt-1 text-2xl font-bold text-[var(--warning)]">
+                  {pkr(result.current)}
+                </p>
               </div>
               <div className="rounded-xl border bg-surface p-3">
                 <p className="flex items-center gap-1 text-[11px] text-muted-foreground">
@@ -509,15 +539,7 @@ export function GasCookingCalculator() {
   );
 }
 
-function MiniStat({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
+function MiniStat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div className="rounded-xl border bg-surface p-2.5">
       <p className="flex items-center gap-1 text-[10px] text-muted-foreground">
@@ -548,7 +570,10 @@ function BreakdownRow({
         <span className="font-semibold text-foreground/80">{pkr(value)}</span>
       </div>
       <div className="h-1.5 overflow-hidden rounded-full bg-secondary">
-        <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: tone }} />
+        <div
+          className="h-full rounded-full transition-all duration-500"
+          style={{ width: `${pct}%`, background: tone }}
+        />
       </div>
     </div>
   );

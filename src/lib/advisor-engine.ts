@@ -1,7 +1,12 @@
 import type { Appliance } from "./awaaz-data";
 import type { Disco } from "./awaaz-data";
 import { slabBreakdownFor, pkr } from "./awaaz-data";
-import { lifelineStatus, calculateVampire, type StandbyDevice, type BudgetVerdict } from "./awaaz-household";
+import {
+  lifelineStatus,
+  calculateVampire,
+  type StandbyDevice,
+  type BudgetVerdict,
+} from "./awaaz-household";
 
 export type AdvisorContext = {
   appliances: Appliance[];
@@ -35,7 +40,9 @@ function detectIntent(message: string): Intent {
   const lower = message.toLowerCase();
   if (/(salam|hello|hi|assalam|namaste|hey|salam|adaab)/i.test(lower)) return "greeting";
   if (/(slab|tariff|rate|protected|unprotected|lifeline|unit)/i.test(lower)) return "slab";
-  if (/(appliance|ac|fan|fridge|light|tv|iron|heater|motor|geyser|washing|plug|device)/i.test(lower))
+  if (
+    /(appliance|ac|fan|fridge|light|tv|iron|heater|motor|geyser|washing|plug|device)/i.test(lower)
+  )
     return "appliance";
   if (/(bill|amount|payment|cost|mahina|month|spend|budget|cross|over)/i.test(lower)) return "bill";
   if (/(save|saving|kam|reduce|cut|tip|advice|madad|bachat|kam\skaro|bachao)/i.test(lower))
@@ -49,7 +56,7 @@ function topConsumers(appliances: Appliance[], n = 3) {
       ...a,
       monthlyKwh: (a.watts * a.hours * a.qty * 30) / 1000,
     }))
-    .sort((a, b) => (b as any).monthlyKwh - (a as any).monthlyKwh)
+    .sort((a, b) => b.monthlyKwh - a.monthlyKwh)
     .slice(0, n);
 }
 
@@ -75,7 +82,8 @@ function generateGreeting(ctx: AdvisorContext): AdvisorResponse {
 
 function generateSlabAdvice(ctx: AdvisorContext): AdvisorResponse {
   const status = lifelineStatus(ctx.billedUnits);
-  const marginalRate = ctx.disco.slabs.find((s) => s.upTo >= ctx.billedUnits)?.rate ?? ctx.disco.slabs[0]!.rate;
+  const marginalRate =
+    ctx.disco.slabs.find((s) => s.upTo >= ctx.billedUnits)?.rate ?? ctx.disco.slabs[0]!.rate;
 
   if (ctx.unprotected) {
     return {
@@ -100,7 +108,8 @@ function generateApplianceAdvice(ctx: AdvisorContext): AdvisorResponse {
       tag: "tip",
       tagLabel: "Appliance Tip",
       urdu: "آپ نے ابھی کوئی اپلائنس نہیں بتائی۔ اپنے گھر کے آلات درج کریں تاکہ میں بتا سکوں کون سا زیادہ بجلی استعمال کر رہا ہے۔",
-      romanUrdu: "Aap ne abhi koi appliance nahi batayi. Apne ghar ke alaat enter karein taake main bata sakoon kaun sa zyada bijli istemaal kar raha hai.",
+      romanUrdu:
+        "Aap ne abhi koi appliance nahi batayi. Apne ghar ke alaat enter karein taake main bata sakoon kaun sa zyada bijli istemaal kar raha hai.",
     };
   }
 
@@ -109,7 +118,8 @@ function generateApplianceAdvice(ctx: AdvisorContext): AdvisorResponse {
   const topKwh = (topItem.watts * topItem.hours * topItem.qty * 30) / 1000;
   const names = top.map((a) => a.name).join("، ");
   const namesRoman = top.map((a) => a.name).join(", ");
-  const marginalRate = ctx.disco.slabs.find((s) => s.upTo >= ctx.billedUnits)?.rate ?? ctx.disco.slabs[0]!.rate;
+  const marginalRate =
+    ctx.disco.slabs.find((s) => s.upTo >= ctx.billedUnits)?.rate ?? ctx.disco.slabs[0]!.rate;
   const saveRs = Math.round(topKwh * 0.25 * marginalRate * 1.29);
 
   return {
@@ -165,8 +175,12 @@ function generateSavingAdvice(ctx: AdvisorContext): AdvisorResponse {
     const top = topConsumers(ctx.appliances, 1);
     const topItem = top[0]!;
     const topKwh = (topItem.watts * topItem.hours * topItem.qty * 30) / 1000;
-    tips.push(`${topItem.name} کو کم استعمال کریں — یہ ${Math.round(topKwh)} یونٹس ماہانہ کھاتا ہے۔ ${topItem.tip}`);
-    tipsRoman.push(`${topItem.name} ko kam istemaal karein — yeh ${Math.round(topKwh)} units mahana khata hai. ${topItem.tip}`);
+    tips.push(
+      `${topItem.name} کو کم استعمال کریں — یہ ${Math.round(topKwh)} یونٹس ماہانہ کھاتا ہے۔ ${topItem.tip}`,
+    );
+    tipsRoman.push(
+      `${topItem.name} ko kam istemaal karein — yeh ${Math.round(topKwh)} units mahana khata hai. ${topItem.tip}`,
+    );
   }
 
   tips.push("انورجی سیور LED بلب استعمال کریں — یہ 80% کم بجلی استعمال کرتے ہیں۔");
@@ -176,13 +190,19 @@ function generateSavingAdvice(ctx: AdvisorContext): AdvisorResponse {
   tipsRoman.push("AC ko 26 degree par rakhein — har degree kam karne se 6% bijli bachti hai.");
 
   if (ctx.unprotected && ctx.unitsToNextTier !== null) {
-    tips.push(`آپ غیر محفوظ سلاب میں ہیں۔ ${ctx.unitsToNextTier} یونٹس کم استعمال کریں تو محفوظ سلاب میں واپس آ سکیں گے۔`);
-    tipsRoman.push(`Aap ghair-mehfooz slab mein hain. ${ctx.unitsToNextTier} units kam istemaal karein to mehfooz slab mein wapas aa sakenge.`);
+    tips.push(
+      `آپ غیر محفوظ سلاب میں ہیں۔ ${ctx.unitsToNextTier} یونٹس کم استعمال کریں تو محفوظ سلاب میں واپس آ سکیں گے۔`,
+    );
+    tipsRoman.push(
+      `Aap ghair-mehfooz slab mein hain. ${ctx.unitsToNextTier} units kam istemaal karein to mehfooz slab mein wapas aa sakenge.`,
+    );
   }
 
   if (ctx.vampireMonthlyCost > 0) {
     tips.push(`اسٹینڈ بائی آلات بند کریں — ${pkr(ctx.vampireMonthlyCost)} ماہانہ ضائع ہو رہے ہیں۔`);
-    tipsRoman.push(`Standby alaat band karein — ${pkr(ctx.vampireMonthlyCost)} mahana zaya ho rahe hain.`);
+    tipsRoman.push(
+      `Standby alaat band karein — ${pkr(ctx.vampireMonthlyCost)} mahana zaya ho rahe hain.`,
+    );
   }
 
   tips.push("استعمال نہ کرنے پر آلات کو سوئچ بورڈ سے بند کریں۔");
@@ -197,9 +217,7 @@ function generateSavingAdvice(ctx: AdvisorContext): AdvisorResponse {
 }
 
 function generateGeneralAdvice(ctx: AdvisorContext): AdvisorResponse {
-  const slabInfo = ctx.unprotected
-    ? `آپ غیر محفوظ سلاب میں ہیں`
-    : `آپ محفوظ سلاب میں ہیں`;
+  const slabInfo = ctx.unprotected ? `آپ غیر محفوظ سلاب میں ہیں` : `آپ محفوظ سلاب میں ہیں`;
   const slabInfoRoman = ctx.unprotected
     ? `Aap ghair-mehfooz slab mein hain`
     : `Aap mehfooz slab mein hain`;

@@ -22,14 +22,7 @@ type Match = Recipe & { matched: string[]; missing: string[]; score: number };
 const defaultPantry = ["roti", "daal", "rice", "salan"];
 const defaultSelected = ["Roti / Naan", "Daal", "Cooked Rice", "Chicken Qorma"];
 
-const simulatedHeard = [
-  "Baqiya Chawal",
-  "Bhindi",
-  "Qeema",
-  "Dahi",
-  "Aloo",
-  "Shimla Mirch",
-];
+const simulatedHeard = ["Baqiya Chawal", "Bhindi", "Qeema", "Dahi", "Aloo", "Shimla Mirch"];
 
 const titleCase = (s: string) => s.trim().replace(/\b\w/g, (c) => c.toUpperCase());
 
@@ -73,9 +66,26 @@ export function RecipeMaker() {
 
   const startVoice = () => {
     if (listening) return;
-    const SR =
-      typeof window !== "undefined" &&
-      ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
+    interface SpeechRecognitionEventLike {
+      results?: Array<Array<{ transcript?: string }>>;
+    }
+    type SpeechRecognitionConstructor = new () => {
+      lang: string;
+      interimResults: boolean;
+      maxAlternatives: number;
+      onresult: ((e: SpeechRecognitionEventLike) => void) | null;
+      onerror: (() => void) | null;
+      onend: (() => void) | null;
+      start: () => void;
+    };
+    const win =
+      typeof window !== "undefined"
+        ? (window as unknown as {
+            SpeechRecognition?: SpeechRecognitionConstructor;
+            webkitSpeechRecognition?: SpeechRecognitionConstructor;
+          })
+        : undefined;
+    const SR = win?.SpeechRecognition || win?.webkitSpeechRecognition;
     setVoiceNote(null);
     setListening(true);
 
@@ -85,7 +95,7 @@ export function RecipeMaker() {
         rec.lang = "ur-PK";
         rec.interimResults = false;
         rec.maxAlternatives = 1;
-        rec.onresult = (e: any) => {
+        rec.onresult = (e: SpeechRecognitionEventLike) => {
           const text = e.results?.[0]?.[0]?.transcript ?? "";
           if (text) addItem(text, `Heard “${titleCase(text)}” and added it to your fridge.`);
         };

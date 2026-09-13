@@ -77,7 +77,6 @@
   --glow-amber: 0 0 0 1px oklch(0.83 0.16 82 / 35%), 0 12px 40px oklch(0.83 0.16 82 / 16%);
 }
 
-
 @layer base {
   * {
     border-color: var(--color-border);
@@ -206,7 +205,6 @@
   padding: 0.2rem 0.45rem;
   text-transform: uppercase;
 }
-
 
 @utility floating-nav {
   border: 1px solid oklch(1 0 0 / 12%);

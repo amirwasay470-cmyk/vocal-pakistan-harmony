@@ -10,11 +10,7 @@ import {
   ShieldAlert,
   Zap,
 } from "lucide-react";
-import {
-  defaultStandbyDevices,
-  calculateVampire,
-  type StandbyDevice,
-} from "@/lib/awaaz-household";
+import { defaultStandbyDevices, calculateVampire, type StandbyDevice } from "@/lib/awaaz-household";
 import {
   analyzeMeterHealth,
   smartPlugSchedules,
@@ -48,7 +44,10 @@ export function VampireDetector({ billedUnits, estimatedUnits, discoId, applianc
     setDevices((list) =>
       list.map((d) =>
         d.id === id
-          ? { ...d, qty: d.qty > 0 ? 0 : (defaultStandbyDevices.find((x) => x.id === id)?.qty ?? 1) }
+          ? {
+              ...d,
+              qty: d.qty > 0 ? 0 : (defaultStandbyDevices.find((x) => x.id === id)?.qty ?? 1),
+            }
           : d,
       ),
     );
@@ -66,7 +65,13 @@ export function VampireDetector({ billedUnits, estimatedUnits, discoId, applianc
     const meter = analyzeMeterHealth(billedUnits, estimatedUnits, vampire.monthlyUnits);
     const schedules = smartPlugSchedules(
       vampire.monthlyCost,
-      activeDevices.map((d) => ({ name: d.name, urdu: d.urdu, watts: d.watts, qty: d.qty, tip: d.tip })),
+      activeDevices.map((d) => ({
+        name: d.name,
+        urdu: d.urdu,
+        watts: d.watts,
+        qty: d.qty,
+        tip: d.tip,
+      })),
       effectiveRate,
     );
 
@@ -92,9 +97,7 @@ export function VampireDetector({ billedUnits, estimatedUnits, discoId, applianc
             <h3 className="flex items-center gap-2 text-base font-semibold">
               <Plug className="h-4 w-4 text-warning" /> Standby devices
             </h3>
-            <span className="warn-badge">
-              {devices.filter((d) => d.qty > 0).length} active
-            </span>
+            <span className="warn-badge">{devices.filter((d) => d.qty > 0).length} active</span>
           </div>
           <p className="mb-3 text-xs text-muted-foreground">
             Tap the devices that stay plugged in 24/7 at your home — even when not in use.
@@ -123,9 +126,16 @@ export function VampireDetector({ billedUnits, estimatedUnits, discoId, applianc
           {/* Quick context */}
           <div className="mt-5 rounded-xl bg-secondary/50 p-3 text-xs text-muted-foreground">
             <p className="font-semibold text-foreground">Connected from Bill Audit</p>
-            <p className="mt-1">Billed units: <strong className="text-foreground">{billedUnits}</strong> kWh</p>
-            <p>Estimated appliance use: <strong className="text-foreground">{Math.round(estimatedUnits)}</strong> kWh</p>
-            <p>Appliances tracked: <strong className="text-foreground">{appliances.length}</strong></p>
+            <p className="mt-1">
+              Billed units: <strong className="text-foreground">{billedUnits}</strong> kWh
+            </p>
+            <p>
+              Estimated appliance use:{" "}
+              <strong className="text-foreground">{Math.round(estimatedUnits)}</strong> kWh
+            </p>
+            <p>
+              Appliances tracked: <strong className="text-foreground">{appliances.length}</strong>
+            </p>
           </div>
 
           <div className="mt-5">
@@ -152,7 +162,8 @@ export function VampireDetector({ billedUnits, estimatedUnits, discoId, applianc
                     <p className="eyebrow">Monthly vampire waste</p>
                     <p className="mt-1 text-3xl font-bold text-warning">{pkr(totalWaste)}</p>
                     <p className="text-sm text-muted-foreground">
-                      {Math.round(analyzed.vampire.monthlyUnits)} units wasted while nothing is in use
+                      {Math.round(analyzed.vampire.monthlyUnits)} units wasted while nothing is in
+                      use
                     </p>
                   </div>
                   <Ghost className="h-8 w-8 text-warning" />
@@ -190,9 +201,12 @@ export function VampireDetector({ billedUnits, estimatedUnits, discoId, applianc
                     <div className="mt-3">
                       <div className="mb-1 flex items-center justify-between text-xs">
                         <span className="text-muted-foreground">Estimated vs billed</span>
-                        <span className={`font-semibold ${analyzed.meter.gapUnits > 0 ? "text-destructive" : "text-primary"}`}>
+                        <span
+                          className={`font-semibold ${analyzed.meter.gapUnits > 0 ? "text-destructive" : "text-primary"}`}
+                        >
                           {analyzed.meter.gapUnits > 0 ? "+" : ""}
-                          {Math.round(analyzed.meter.gapUnits)} units ({analyzed.meter.gapPct.toFixed(0)}%)
+                          {Math.round(analyzed.meter.gapUnits)} units (
+                          {analyzed.meter.gapPct.toFixed(0)}%)
                         </span>
                       </div>
                       <div className="flex gap-1">
@@ -285,19 +299,21 @@ export function VampireDetector({ billedUnits, estimatedUnits, discoId, applianc
                     </span>
                   </div>
                   <p className="mt-2 text-xs text-muted-foreground">
-                    Set these schedules on smart plugs or timer switches to eliminate standby waste automatically.
+                    Set these schedules on smart plugs or timer switches to eliminate standby waste
+                    automatically.
                   </p>
                   <div className="mt-4 space-y-3">
                     {analyzed.schedules.map((sch) => (
-                      <div
-                        key={sch.device}
-                        className="rounded-xl border bg-surface/60 p-3"
-                      >
+                      <div key={sch.device} className="rounded-xl border bg-surface/60 p-3">
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0">
                             <p className="flex items-center gap-2 text-sm font-medium">
                               {sch.device}
-                              <span className="text-xs font-normal text-muted-foreground" dir="rtl" lang="ur">
+                              <span
+                                className="text-xs font-normal text-muted-foreground"
+                                dir="rtl"
+                                lang="ur"
+                              >
                                 {sch.urdu}
                               </span>
                               {sch.priority === "high" && (
@@ -305,7 +321,8 @@ export function VampireDetector({ billedUnits, estimatedUnits, discoId, applianc
                               )}
                             </p>
                             <p className="mt-1 text-xs text-muted-foreground">
-                              <strong className="text-foreground">{sch.action}</strong> — {sch.schedule}
+                              <strong className="text-foreground">{sch.action}</strong> —{" "}
+                              {sch.schedule}
                             </p>
                           </div>
                           <div className="shrink-0 text-right">

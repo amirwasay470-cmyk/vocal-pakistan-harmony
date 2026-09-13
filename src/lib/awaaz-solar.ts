@@ -80,7 +80,10 @@ export function calculateSolarSystem(input: SolarInput): SolarSystem {
   const afterRows = slabBreakdownFor(imports, disco.slabs);
   const afterEnergy = afterRows.reduce((s, r) => s + r.amount, 0);
   const netMeteringCredit = exported * disco.slabs.at(-1)!.rate * 0.6;
-  const billAfterSolar = Math.max(0, afterEnergy * (1 + disco.taxRate) + disco.fixedCharges - netMeteringCredit);
+  const billAfterSolar = Math.max(
+    0,
+    afterEnergy * (1 + disco.taxRate) + disco.fixedCharges - netMeteringCredit,
+  );
 
   const baseRows = slabBreakdownFor(monthlyUnits, disco.slabs);
   const baseEnergy = baseRows.reduce((s, r) => s + r.amount, 0);
@@ -135,7 +138,7 @@ export function analyzeMeterHealth(
 ): MeterHealth {
   const totalEstimated = estimatedUnits + vampireUnits;
   const gapUnits = billedUnits - totalEstimated;
-  const gapPct = totalEstimated > 0 ? Math.abs(gapUnits) / totalEstimated * 100 : 0;
+  const gapPct = totalEstimated > 0 ? (Math.abs(gapUnits) / totalEstimated) * 100 : 0;
 
   const recommendations: string[] = [];
 
@@ -156,11 +159,19 @@ export function analyzeMeterHealth(
   }
 
   if (gapUnits > 0 && gapPct > 25) {
-    recommendations.push("Submit a meter-reading complaint to your DISCO — request a physical inspection.");
-    recommendations.push("Check for hidden or shared loads: water pumps, shared stairwell lights, or a neighbour tapping your line.");
-    recommendations.push("Inspect your meter for signs of tampering or loose wiring at the connection point.");
+    recommendations.push(
+      "Submit a meter-reading complaint to your DISCO — request a physical inspection.",
+    );
+    recommendations.push(
+      "Check for hidden or shared loads: water pumps, shared stairwell lights, or a neighbour tapping your line.",
+    );
+    recommendations.push(
+      "Inspect your meter for signs of tampering or loose wiring at the connection point.",
+    );
     if (gapPct > 50) {
-      recommendations.push("The gap is very large — request a meter calibration test from your DISCO's engineering wing.");
+      recommendations.push(
+        "The gap is very large — request a meter calibration test from your DISCO's engineering wing.",
+      );
     }
     return {
       status: "warning",
@@ -174,8 +185,12 @@ export function analyzeMeterHealth(
     };
   }
 
-  recommendations.push("Compare your last 3 months of bills — if the gap is consistent, request a meter test.");
-  recommendations.push("Check if your meter is old (electromechanical) — older meters drift and over-record.");
+  recommendations.push(
+    "Compare your last 3 months of bills — if the gap is consistent, request a meter test.",
+  );
+  recommendations.push(
+    "Check if your meter is old (electromechanical) — older meters drift and over-record.",
+  );
   return {
     status: "suspicious",
     title: "Small discrepancy noted",

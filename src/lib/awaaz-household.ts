@@ -262,7 +262,8 @@ export function budgetGuard(projectedBill: number, budget: number): BudgetVerdic
       usedPct,
       difference,
       headline: "Close to your limit",
-      advice: "You are near the line — trim standby devices and geyser hours for the rest of the month.",
+      advice:
+        "You are near the line — trim standby devices and geyser hours for the rest of the month.",
     };
   return {
     status: "safe",

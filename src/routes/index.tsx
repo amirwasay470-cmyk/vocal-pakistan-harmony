@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Zap, ChefHat, ShoppingBasket, Megaphone, Sun, Route as RouteIcon, Flame } from "lucide-react";
+import {
+  Zap,
+  ChefHat,
+  ShoppingBasket,
+  Megaphone,
+  Sun,
+  Route as RouteIcon,
+  Flame,
+} from "lucide-react";
 import { BillAudit } from "@/components/awaaz/BillAudit";
 import { RecipeMaker } from "@/components/awaaz/RecipeMaker";
 import { MarketFinder } from "@/components/awaaz/MarketFinder";
@@ -20,7 +28,10 @@ export const Route = createFileRoute("/")({
         content:
           "Audit your electricity bill, size a solar system, detect vampire power drain and meter anomalies, cook smart meals from leftovers, and compare local market grocery prices across Pakistani cities.",
       },
-      { property: "og:title", content: "Awaaz-e-Pakistan — Save on bills, solar, food and groceries" },
+      {
+        property: "og:title",
+        content: "Awaaz-e-Pakistan — Save on bills, solar, food and groceries",
+      },
       {
         property: "og:description",
         content:
@@ -116,9 +127,7 @@ function Index() {
                 </button>
               </div>
             </div>
-            {advisorMode === "embedded" && (
-              <EnergyAdvisor context={advisorCtx} mode="embedded" />
-            )}
+            {advisorMode === "embedded" && <EnergyAdvisor context={advisorCtx} mode="embedded" />}
           </div>
         )}
         {tab === "optimizer" && (

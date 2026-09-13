@@ -23,10 +23,24 @@ export const pantryGrid: PantryItem[] = [
   { id: "dahi", match: "Yogurt", name: "Dahi", urdu: "دہی", emoji: "🥛", wastePkr: 70 },
   { id: "paneer", match: "Paneer", name: "Paneer", urdu: "پنیر", emoji: "🧀", wastePkr: 150 },
   { id: "palak", match: "Spinach (Palak)", name: "Palak", urdu: "پالک", emoji: "🥬", wastePkr: 55 },
-  { id: "bread", match: "Bread Slices", name: "Bread", urdu: "ڈبل روٹی", emoji: "🍞", wastePkr: 45 },
+  {
+    id: "bread",
+    match: "Bread Slices",
+    name: "Bread",
+    urdu: "ڈبل روٹی",
+    emoji: "🍞",
+    wastePkr: 45,
+  },
   { id: "matar", match: "Peas", name: "Matar", urdu: "مٹر", emoji: "🫛", wastePkr: 50 },
   { id: "gajar", match: "Carrots", name: "Gajar", urdu: "گاجر", emoji: "🥕", wastePkr: 40 },
-  { id: "mirch", match: "Green Chillies", name: "Hari Mirch", urdu: "ہری مرچ", emoji: "🌶️", wastePkr: 20 },
+  {
+    id: "mirch",
+    match: "Green Chillies",
+    name: "Hari Mirch",
+    urdu: "ہری مرچ",
+    emoji: "🌶️",
+    wastePkr: 20,
+  },
   { id: "dhania", match: "Coriander", name: "Dhania", urdu: "دھنیا", emoji: "🌿", wastePkr: 20 },
 ];
 
