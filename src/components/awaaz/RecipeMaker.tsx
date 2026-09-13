@@ -5,7 +5,6 @@ import {
   Users,
   Sparkles,
   RotateCcw,
-  Check,
   Wallet,
   Plus,
   Mic,
@@ -13,13 +12,15 @@ import {
   Flame,
   PiggyBank,
 } from "lucide-react";
-import { ingredients, recipes, pkr, type Recipe } from "@/lib/awaaz-data";
+import { recipes, pkr, type Recipe } from "@/lib/awaaz-data";
 import { SectionHead, EmptyState, Stat } from "./BillAudit";
 import { pantryGrid, remixFor, weeklySavings } from "@/lib/awaaz-remix";
+import { Button } from "@/components/ui/button";
 
 type Match = Recipe & { matched: string[]; missing: string[]; score: number };
 
-const defaultSelected = ["Cooked Rice", "Daal", "Onion", "Tomatoes", "Eggs", "Roti / Naan"];
+const defaultPantry = ["roti", "daal", "rice", "salan"];
+const defaultSelected = ["Roti / Naan", "Daal", "Cooked Rice", "Chicken Qorma"];
 
 const simulatedHeard = [
   "Baqiya Chawal",
@@ -43,15 +44,15 @@ export function RecipeMaker() {
   const [matches, setMatches] = useState<Match[] | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [pantry, setPantry] = useState<string[]>(["roti", "daal", "rice", "salan"]);
+  const [pantry, setPantry] = useState<string[]>(defaultPantry);
   const [cooked, setCooked] = useState<string[]>([]);
 
-  const allChips = [...ingredients, ...custom];
   const remixMatches = remixFor(pantry);
   const savings = weeklySavings(pantry, cooked);
 
   const togglePantry = (id: string) => {
-    const item = pantryGrid.find((p) => p.id === id)!;
+    const item = pantryGrid.find((p) => p.id === id);
+    if (!item) return;
     setPantry((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
     setSelected((s) =>
       s.includes(item.match) ? s.filter((x) => x !== item.match) : [...s, item.match],
@@ -61,13 +62,10 @@ export function RecipeMaker() {
   const toggleCooked = (id: string) =>
     setCooked((c) => (c.includes(id) ? c.filter((x) => x !== id) : [...c, id]));
 
-  const toggle = (item: string) =>
-    setSelected((s) => (s.includes(item) ? s.filter((i) => i !== item) : [...s, item]));
-
   const addItem = (raw: string, note?: string) => {
     const item = titleCase(raw);
     if (!item) return;
-    setCustom((c) => (allChips.includes(item) ? c : [...c, item]));
+    setCustom((c) => (c.includes(item) ? c : [...c, item]));
     setSelected((s) => (s.includes(item) ? s : [...s, item]));
     setDraft("");
     if (note) setVoiceNote(note);
@@ -130,6 +128,9 @@ export function RecipeMaker() {
     setServings(4);
     setMaxMinutes(30);
     setMatches(null);
+    setOpenId(null);
+    setPantry(defaultPantry);
+    setCooked([]);
   };
 
   return (
@@ -176,6 +177,96 @@ export function RecipeMaker() {
           <Stat label="Food rescued / week" value={pkr(savings.potential)} />
           <Stat label="Banked from remixes" value={pkr(savings.banked)} accent />
           <Stat label="That's a month" value={pkr(savings.monthly)} />
+        </div>
+
+        <div className="mt-5 border-t pt-5">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              addItem(draft);
+            }}
+            className="flex flex-wrap gap-2"
+          >
+            <input
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              placeholder="Add item +"
+              aria-label="Add a custom ingredient"
+              className="input-base min-h-11 flex-1 basis-52"
+            />
+            <Button type="submit" className="btn-primary min-h-11 px-4">
+              <Plus className="h-4 w-4" /> Add item
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={startVoice}
+              aria-label={listening ? "Listening for an ingredient" : "Add ingredient by voice"}
+              aria-pressed={listening}
+              title="Add ingredient by voice"
+              className={`h-11 w-11 shrink-0 rounded-xl transition-all active:scale-95 ${
+                listening ? "animate-pulse border-primary bg-primary text-primary-foreground" : ""
+              }`}
+            >
+              {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+            </Button>
+          </form>
+
+          {custom.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2" aria-label="Custom ingredients">
+              {custom.map((item) => (
+                <span key={item} className="status-badge">
+                  <Plus className="h-3 w-3" /> {item}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {(listening || voiceNote) && (
+            <p className="tab-enter mt-2 text-xs text-muted-foreground" aria-live="polite">
+              {listening ? "Listening… say one item, e.g. “dahi”." : voiceNote}
+            </p>
+          )}
+
+          <div className="mt-5 grid gap-4 sm:grid-cols-2">
+            <label className="block">
+              <span className="mb-1 block text-xs font-medium text-muted-foreground">
+                Serving for {servings} people
+              </span>
+              <input
+                type="range"
+                min={1}
+                max={10}
+                value={servings}
+                onChange={(e) => setServings(Number(e.target.value))}
+                className="w-full accent-[var(--primary)]"
+              />
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-xs font-medium text-muted-foreground">
+                Max cooking time: {maxMinutes} min
+              </span>
+              <input
+                type="range"
+                min={10}
+                max={45}
+                step={5}
+                value={maxMinutes}
+                onChange={(e) => setMaxMinutes(Number(e.target.value))}
+                className="w-full accent-[var(--primary)]"
+              />
+            </label>
+          </div>
+
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Button type="button" onClick={cook} className="btn-primary">
+              <Sparkles className="h-4 w-4" /> Suggest recipes
+            </Button>
+            <Button type="button" variant="outline" onClick={reset} className="btn-ghost">
+              <RotateCcw className="h-4 w-4" /> Reset
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -233,109 +324,6 @@ export function RecipeMaker() {
           </div>
         </div>
       )}
-
-
-      <div className="rounded-2xl border bg-card p-5 shadow-sm">
-        <h3 className="mb-3 text-base font-semibold">What's left in the fridge?</h3>
-        <div className="flex flex-wrap gap-2">
-          {allChips.map((item) => {
-            const on = selected.includes(item);
-            return (
-              <button
-                key={item}
-                onClick={() => toggle(item)}
-                className={`inline-flex min-h-11 items-center gap-1.5 rounded-full border px-4 py-2 text-sm transition-all active:scale-95 ${
-                  on
-                    ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                    : "bg-surface hover:bg-secondary"
-                }`}
-              >
-                {on && <Check className="h-3.5 w-3.5" />}
-                {item}
-              </button>
-            );
-          })}
-        </div>
-
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            addItem(draft);
-          }}
-          className="mt-4 flex flex-wrap gap-2"
-        >
-          <input
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            placeholder="Add anything else — bhindi, qeema, dahi…"
-            aria-label="Add a custom leftover"
-            className="input-base min-h-11 flex-1 basis-52"
-          />
-          <button type="submit" className="btn-primary min-h-11 px-4">
-            <Plus className="h-4 w-4" /> Add Item
-          </button>
-          <button
-            type="button"
-            onClick={startVoice}
-            aria-label="Add item by voice"
-            aria-pressed={listening}
-            className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl border transition-all active:scale-95 ${
-              listening
-                ? "animate-pulse border-primary bg-primary text-primary-foreground"
-                : "hover:bg-secondary"
-            }`}
-          >
-            {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-          </button>
-        </form>
-
-        {(listening || voiceNote) && (
-          <p className="tab-enter mt-2 text-xs text-muted-foreground">
-            {listening ? "Listening… say one item, e.g. “dahi”." : voiceNote}
-          </p>
-        )}
-
-
-        <div className="mt-5 grid gap-4 sm:grid-cols-2">
-          <label className="block">
-            <span className="mb-1 block text-xs font-medium text-muted-foreground">
-              Serving for {servings} people
-            </span>
-            <input
-              type="range"
-              min={1}
-              max={10}
-              value={servings}
-              onChange={(e) => setServings(Number(e.target.value))}
-              className="w-full accent-[var(--primary)]"
-            />
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-xs font-medium text-muted-foreground">
-              Max cooking time: {maxMinutes} min
-            </span>
-            <input
-              type="range"
-              min={10}
-              max={45}
-              step={5}
-              value={maxMinutes}
-              onChange={(e) => setMaxMinutes(Number(e.target.value))}
-              className="w-full accent-[var(--primary)]"
-            />
-          </label>
-        </div>
-
-        <div className="mt-5 flex flex-wrap gap-3">
-          <button onClick={cook} className="btn-primary">
-            <Sparkles className="h-4 w-4" /> Suggest recipes
-          </button>
-          <button onClick={reset} className="btn-ghost">
-            <RotateCcw className="h-4 w-4" /> Reset
-          </button>
-        </div>
-      </div>
-
       {!matches ? (
         <EmptyState
           icon={<ChefHat className="h-6 w-6" />}
