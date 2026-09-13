@@ -53,7 +53,7 @@ function Index() {
   return (
     <div className="min-h-screen bg-background pb-24 md:pb-0">
       <header className="sticky top-0 z-30 border-b bg-card/95 backdrop-blur">
-        <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 py-3">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-center gap-3">
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
               <Megaphone className="h-5 w-5" />
@@ -66,7 +66,7 @@ function Index() {
             </div>
           </div>
 
-          <nav className="hidden shrink-0 items-center gap-1 md:flex">
+          <nav className="flex shrink-0 items-center gap-1 overflow-x-auto whitespace-nowrap rounded-xl [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {tabs.map((t) => {
               const Icon = t.icon;
               const active = tab === t.id;
@@ -75,13 +75,13 @@ function Index() {
                   key={t.id}
                   onClick={() => setTab(t.id)}
                   aria-current={active ? "page" : undefined}
-                  className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold transition-colors ${
+                  className={`inline-flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold transition-colors ${
                     active
                       ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                   }`}
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className="h-4 w-4 shrink-0" />
                   {t.label}
                 </button>
               );
