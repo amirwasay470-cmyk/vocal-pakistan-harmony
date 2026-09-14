@@ -14,9 +14,12 @@ import {
   Building2,
   Store,
   Info,
+  Scale,
 } from "lucide-react";
 import { pkr, type City } from "@/lib/awaaz-data";
 import { ESSENTIAL_COMMODITIES, type EssentialCommodity } from "@/lib/awaaz-market-intel";
+import { usePersistentState } from "@/lib/use-persistent-state";
+import { ShareReportButton } from "@/components/awaaz/ShareReportButton";
 
 type Props = {
   city: City;
@@ -29,6 +32,10 @@ export function DailyCommodityRateBoard({ city, onCityChange }: Props) {
     atta: "10kg",
     chicken: "meat",
   });
+  const [weightUnit, setWeightUnit] = usePersistentState<"kg" | "pau" | "mann">(
+    "awaaz_market_weight_unit",
+    "kg",
+  );
 
   const filtered = ESSENTIAL_COMMODITIES.filter((item) => {
     if (categoryFilter === "all") return true;
@@ -54,9 +61,9 @@ export function DailyCommodityRateBoard({ city, onCityChange }: Props) {
 
   return (
     <div className="tab-enter space-y-5">
-      {/* City selector and filters bar */}
+      {/* City selector, weight unit shortcut and filters bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/80 bg-card p-4 shadow-sm">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <div className="relative">
             <MapPin className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-primary" />
             <select
@@ -69,13 +76,68 @@ export function DailyCommodityRateBoard({ city, onCityChange }: Props) {
               <option value="Islamabad">Islamabad Capital Territory</option>
             </select>
           </div>
-          <span className="hidden text-xs text-muted-foreground sm:inline">
-            Official DC guidelines & verified retail rates
-          </span>
+
+          {/* Smart Weight Unit Toggle Shortcut */}
+          <div className="flex items-center gap-1 rounded-xl border border-border/70 bg-surface/80 p-1 text-xs font-semibold">
+            <Scale className="ml-1 h-3.5 w-3.5 text-muted-foreground" />
+            <span className="text-[11px] text-muted-foreground mr-1">Unit:</span>
+            <button
+              type="button"
+              onClick={() => setWeightUnit("kg")}
+              className={`rounded-md px-2 py-0.5 text-xs transition ${
+                weightUnit === "kg"
+                  ? "bg-primary text-primary-foreground shadow-xs font-bold"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              1 KG (کلو)
+            </button>
+            <button
+              type="button"
+              onClick={() => setWeightUnit("pau")}
+              className={`rounded-md px-2 py-0.5 text-xs transition ${
+                weightUnit === "pau"
+                  ? "bg-amber-600 text-white shadow-xs font-bold"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Pau (پاؤ)
+            </button>
+            <button
+              type="button"
+              onClick={() => setWeightUnit("mann")}
+              className={`rounded-md px-2 py-0.5 text-xs transition ${
+                weightUnit === "mann"
+                  ? "bg-emerald-600 text-white shadow-xs font-bold"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Mann (من / 40kg)
+            </button>
+          </div>
+        </div>
+
+        {/* Share Daily Bazaar Rate Sheet */}
+        <div className="flex items-center gap-2">
+          <ShareReportButton
+            title={`Daily Bazaar Price Basket (${city})`}
+            urduTitle="روزانہ سرکاری ریٹ لسٹ و مارکیٹ بھاؤ"
+            category="bazaar"
+            totalCostLabel="DC Rate Basket vs Open Market"
+            totalCostValue={`Live Verified (${city})`}
+            advice="Morning Mandi arrivals (6 AM - 8 AM) provide best vegetable rates. Check official DC price app before paying retail vendors."
+            breakdown={filtered.slice(0, 5).map((item) => {
+              const r = item.rates[city];
+              return {
+                label: `${item.name} (${item.urdu})`,
+                value: `DC: Rs. ${r.dcOfficial}/${item.unit} · Market: Rs. ${r.openMarket}/${item.unit}`,
+              };
+            })}
+          />
         </div>
 
         {/* Filter categories */}
-        <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-border/70 bg-surface/80 p-1 text-xs">
+        <div className="w-full flex flex-wrap items-center gap-1.5 rounded-xl border border-border/70 bg-surface/80 p-1 text-xs">
           {[
             { id: "all", label: "All Essentials" },
             { id: "staple", label: "Flour & Sugar" },
@@ -107,10 +169,26 @@ export function DailyCommodityRateBoard({ city, onCityChange }: Props) {
           const activeVariant = item.variants?.find((v) => v.id === activeVariantId);
           const multiplier = activeVariant?.multiplier ?? 1;
 
-          const dcRate = Math.round(rateData.dcOfficial * multiplier);
-          const marketRate = Math.round(rateData.openMarket * multiplier);
-          const diffPct = Math.round(((marketRate - dcRate) / dcRate) * 100);
-          const displayUnit = activeVariant?.unit ?? item.unit;
+          const isPerKg = item.unit === "kg" && !activeVariant;
+          const unitScale = isPerKg
+            ? weightUnit === "pau"
+              ? 0.25
+              : weightUnit === "mann"
+                ? 40
+                : 1
+            : 1;
+
+          const displayUnit = isPerKg
+            ? weightUnit === "pau"
+              ? "250g (پاؤ)"
+              : weightUnit === "mann"
+                ? "40kg (من)"
+                : "1 kg (کلو)"
+            : (activeVariant?.unit ?? item.unit);
+
+          const dcRate = Math.round(rateData.dcOfficial * multiplier * unitScale);
+          const marketRate = Math.round(rateData.openMarket * multiplier * unitScale);
+          const diffPct = Math.round(((marketRate - dcRate) / Math.max(1, dcRate)) * 100);
 
           const isSurge = rateData.supplyStatus === "surge";
           const isModerating = rateData.supplyStatus === "moderating";

@@ -16,6 +16,8 @@ import { recipes, pkr, type Recipe } from "@/lib/awaaz-data";
 import { SectionHead, EmptyState, Stat } from "./BillAudit";
 import { pantryGrid, remixFor, weeklySavings } from "@/lib/awaaz-remix";
 import { Button } from "@/components/ui/button";
+import { usePersistentState } from "@/lib/use-persistent-state";
+import { ShareReportButton } from "@/components/awaaz/ShareReportButton";
 
 type Match = Recipe & { matched: string[]; missing: string[]; score: number };
 
@@ -32,13 +34,15 @@ export function RecipeMaker() {
   const [draft, setDraft] = useState("");
   const [listening, setListening] = useState(false);
   const [voiceNote, setVoiceNote] = useState<string | null>(null);
-  const [servings, setServings] = useState(4);
-  const [maxMinutes, setMaxMinutes] = useState(30);
+  const [servings, setServings] = usePersistentState<number>("awaaz_recipe_servings", 4);
+  const [maxMinutes, setMaxMinutes] = usePersistentState<number>("awaaz_recipe_max_minutes", 30);
   const [matches, setMatches] = useState<Match[] | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [pantry, setPantry] = useState<string[]>(defaultPantry);
-  const [cooked, setCooked] = useState<string[]>([]);
+  const [pantry, setPantry] = usePersistentState<string[]>("awaaz_pantry_items", defaultPantry);
+  const [cooked, setCooked] = usePersistentState<string[]>("awaaz_cooked_remixes", []);
+  const [hasSuggested, setHasSuggested] = useState(false);
+  const [openRemixId, setOpenRemixId] = useState<string | null>(null);
 
   const remixMatches = remixFor(pantry);
   const savings = weeklySavings(pantry, cooked);
@@ -118,6 +122,7 @@ export function RecipeMaker() {
   };
 
   const cook = () => {
+    setHasSuggested(true);
     const scored = recipes
       .map((r) => {
         const matched = r.uses.filter((u) => selected.includes(u));
@@ -131,6 +136,8 @@ export function RecipeMaker() {
   };
 
   const reset = () => {
+    setHasSuggested(false);
+    setOpenRemixId(null);
     setSelected(defaultSelected);
     setCustom([]);
     setDraft("");
@@ -303,39 +310,51 @@ export function RecipeMaker() {
         </div>
       </div>
 
-      {remixMatches.length > 0 && (
+      {hasSuggested && remixMatches.length > 0 && (
         <div className="glass-card p-5 sm:p-6 shadow-sm">
-          <h3 className="mb-1 flex items-center gap-2 text-base font-bold text-white tracking-tight">
-            <PiggyBank className="h-4 w-4 text-emerald-400" /> Desi Remix Ideas
-          </h3>
-          <p className="mb-4 text-xs text-muted-foreground">
-            Second-life recipe transformations for what's in your fridge. Tap “I cooked this” to
-            bank your grocery savings.
-          </p>
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 className="flex items-center gap-2 text-base font-bold text-white tracking-tight">
+                <PiggyBank className="h-4 w-4 text-emerald-400" /> Desi Remix Ideas
+              </h3>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Authentic step-by-step Pakistani kitchen transformations for your pantry. Tap “I
+                cooked this” to bank your grocery savings.
+              </p>
+            </div>
+            <span className="badge-safe text-xs font-mono">
+              {remixMatches.length} smart transformations found
+            </span>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
             {remixMatches.slice(0, 6).map((r) => {
               const done = cooked.includes(r.id);
+              const isTutorialOpen = openRemixId === r.id || openRemixId === null; // open by default for effortless reading
+
               return (
                 <div
                   key={r.id}
-                  className={`rounded-xl border p-4 transition-all duration-200 ${
+                  className={`rounded-2xl border p-5 transition-all duration-200 ${
                     done
                       ? "border-emerald-500/40 bg-emerald-950/25 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
-                      : "border-white/[0.08] bg-slate-900/60 hover:border-white/[0.15]"
+                      : "border-white/[0.08] bg-slate-900/70 hover:border-white/[0.15]"
                   }`}
                 >
                   <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-bold text-white">
+                      <p className="truncate text-base font-bold text-white">
                         {r.emoji} {r.title}
                       </p>
                       <p className="truncate text-xs text-muted-foreground">{r.urdu}</p>
                     </div>
                     <span className="badge-safe shrink-0 font-mono">saves {pkr(r.savesPkr)}</span>
                   </div>
+
                   <p className="mt-2 text-xs leading-relaxed text-slate-300">{r.idea}</p>
+
                   <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                    <span className="inline-flex items-center gap-1 text-slate-400 font-mono">
+                    <span className="inline-flex items-center gap-1 text-slate-300 font-mono">
                       <Clock className="h-3.5 w-3.5 text-amber-400" /> {r.minutes} min
                     </span>
                     {r.missing.map((m) => (
@@ -343,17 +362,91 @@ export function RecipeMaker() {
                         need: {m}
                       </span>
                     ))}
+                    {r.pantryExtras?.map((pe) => (
+                      <span key={pe} className="badge-safe font-normal text-[10px]">
+                        + {pe}
+                      </span>
+                    ))}
                   </div>
-                  <button
-                    onClick={() => toggleCooked(r.id)}
-                    className={`mt-3 min-h-10 w-full rounded-xl text-xs font-bold transition-all active:scale-[0.98] ${
-                      done
-                        ? "btn-primary shadow-[0_0_15px_rgba(16,185,129,0.25)]"
-                        : "border border-white/[0.1] bg-slate-900/80 text-slate-300 hover:border-white/[0.2] hover:text-white"
-                    }`}
-                  >
-                    {done ? "✓ Cooked — Saving Banked to Wallet" : "Mark as Cooked (Bank Saving)"}
-                  </button>
+
+                  {/* Comprehensive Step-by-Step Cooking Instructions Tutorial */}
+                  <div className="mt-4 border-t border-white/[0.08] pt-3.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-emerald-400">
+                        Step-by-Step Cooking Tutorial ({r.steps.length} Steps)
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setOpenRemixId((cur) => (cur === r.id ? "__closed__" : r.id))
+                        }
+                        className="text-[11px] font-semibold text-slate-400 hover:text-white transition-colors"
+                      >
+                        {openRemixId === "__closed__" && openRemixId !== r.id
+                          ? "▼ Show Steps"
+                          : openRemixId === r.id || openRemixId === null
+                            ? "▲ Collapse Steps"
+                            : "▼ View Steps"}
+                      </button>
+                    </div>
+
+                    {(openRemixId === null || openRemixId === r.id) && (
+                      <div className="mt-3 space-y-2.5 tab-enter">
+                        <ol className="space-y-2 text-xs">
+                          {r.steps.map((step, idx) => (
+                            <li
+                              key={idx}
+                              className="flex items-start gap-2.5 rounded-xl border border-white/[0.05] bg-slate-950/60 p-2.5 leading-relaxed text-slate-200"
+                            >
+                              <span className="grid h-5 w-5 shrink-0 place-items-center rounded-md bg-emerald-500/20 text-[10px] font-bold text-emerald-400 font-mono border border-emerald-500/30 mt-0.5">
+                                {idx + 1}
+                              </span>
+                              <span className="text-slate-200 text-xs">{step}</span>
+                            </li>
+                          ))}
+                        </ol>
+
+                        {r.proTip && (
+                          <div className="rounded-xl border border-amber-500/25 bg-amber-950/20 p-2.5 text-[11px] text-amber-200/90 leading-relaxed">
+                            <span className="font-bold text-amber-300">💡 Kitchen Pro Tip: </span>
+                            {r.proTip}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <button
+                      type="button"
+                      onClick={() => toggleCooked(r.id)}
+                      className={`min-h-10 flex-1 rounded-xl text-xs font-bold transition-all active:scale-[0.98] ${
+                        done
+                          ? "btn-primary shadow-[0_0_15px_rgba(16,185,129,0.25)]"
+                          : "border border-white/[0.1] bg-slate-900/80 text-slate-300 hover:border-white/[0.2] hover:text-white"
+                      }`}
+                    >
+                      {done ? "✓ Cooked — Saving Banked" : "Mark as Cooked (Bank Saving)"}
+                    </button>
+                    <ShareReportButton
+                      title={`Desi Remix: ${r.title}`}
+                      urduTitle={r.urdu}
+                      category="recipe"
+                      totalCostLabel="Cooking Time"
+                      totalCostValue={`${r.minutes} minutes`}
+                      savingsValue={`${pkr(r.savesPkr)} Bachat`}
+                      breakdown={[
+                        { label: "Leftovers Used", value: r.needs.join(", ") },
+                        {
+                          label: "Additional Ingredients",
+                          value: r.missing.length ? r.missing.join(", ") : "None required",
+                        },
+                        { label: "Servings", value: `${servings} persons` },
+                        { label: "Steps Count", value: `${r.steps.length} steps` },
+                      ]}
+                      advice={r.proTip ?? r.idea}
+                    />
+                  </div>
                 </div>
               );
             })}

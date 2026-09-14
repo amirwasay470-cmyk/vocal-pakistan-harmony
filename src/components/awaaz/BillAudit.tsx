@@ -40,10 +40,11 @@ import {
   type VampireResult,
 } from "@/lib/awaaz-household";
 import { BillScanner } from "@/components/awaaz/BillScanner";
-import { CyberProgressRing } from "@/components/awaaz/CyberProgressRing";
-import { CyberProgressBar } from "@/components/awaaz/CyberProgressBar";
 import type { BillScan } from "@/lib/bill-scan.functions";
 import type { AdvisorContext } from "@/lib/advisor-engine";
+import { useLiveRates } from "@/lib/live-sync";
+import { usePersistentState } from "@/lib/use-persistent-state";
+import { ShareReportButton } from "@/components/awaaz/ShareReportButton";
 
 type Result = {
   billedUnits: number;
@@ -91,15 +92,20 @@ export function BillAudit({
 }: {
   onContextChange?: (ctx: AdvisorContext) => void;
 }) {
+  const { electricity } = useLiveRates();
   const [appliances, setAppliances] = useState<Appliance[]>(defaultAppliances);
   const [preset, setPreset] = useState<PresetId | null>(null);
-  const [discoId, setDiscoId] = useState("k-electric");
-  const [billedUnits, setBilledUnits] = useState(412);
-  const [billAmount, setBillAmount] = useState(18500);
-  const [budget, setBudget] = useState(20000);
-  const [solarType, setSolarType] = useState<SolarType>("none");
-  const [systemKw, setSystemKw] = useState(5);
-  const [batteryKwh, setBatteryKwh] = useState(10);
+  const [discoId, setDiscoId] = usePersistentState<string>("awaaz_disco_id", "k-electric");
+  const [billedUnits, setBilledUnits] = usePersistentState<number>("awaaz_billed_units", 412);
+  const [billAmount, setBillAmount] = usePersistentState<number>("awaaz_bill_amount", 18500);
+  const [budget, setBudget] = usePersistentState<number>("awaaz_budget", 20000);
+  const [solarType, setSolarType] = usePersistentState<SolarType>("awaaz_solar_type", "none");
+  const [systemKw, setSystemKw] = usePersistentState<number>("awaaz_system_kw", 5);
+  const [batteryKwh, setBatteryKwh] = usePersistentState<number>("awaaz_battery_kwh", 10);
+  const [billViewPeriod, setBillViewPeriod] = usePersistentState<"monthly" | "daily">(
+    "awaaz_bill_view_period",
+    "monthly",
+  );
   const [standby, setStandby] = useState<StandbyDevice[]>(defaultStandbyDevices);
   const [result, setResult] = useState<Result | null>(null);
   const [scannedTaxes, setScannedTaxes] = useState<number | null>(null);
@@ -534,10 +540,46 @@ export function BillAudit({
             />
           ) : (
             <div className="tab-enter space-y-4">
+              {/* Unit & Period Toggle Shortcut */}
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border bg-card/60 px-4 py-2.5">
+                <span className="text-xs font-bold text-foreground">
+                  ⚡ Bill Calculation View (بل دیکھنے کا طریقہ):
+                </span>
+                <div className="flex rounded-lg border border-border bg-secondary/60 p-0.5 text-xs font-semibold">
+                  <button
+                    type="button"
+                    onClick={() => setBillViewPeriod("monthly")}
+                    className={`rounded-md px-3 py-1 transition ${
+                      billViewPeriod === "monthly"
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Monthly (ماہانہ بل)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBillViewPeriod("daily")}
+                    className={`rounded-md px-3 py-1 transition ${
+                      billViewPeriod === "daily"
+                        ? "bg-amber-600 text-white shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Daily Burn (روزانہ خرچ)
+                  </button>
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <Stat label="Units billed" value={`${result.billedUnits}`} />
                 <Stat label="Estimated use" value={`${Math.round(result.estimatedUnits)}`} />
-                <Stat label="Bill estimate" value={pkr(result.total)} />
+                <Stat
+                  label={billViewPeriod === "daily" ? "Daily burn" : "Bill estimate"}
+                  value={
+                    billViewPeriod === "daily" ? `${pkr(result.total / 30)}/day` : pkr(result.total)
+                  }
+                />
                 <Stat label="Possible saving" value={pkr(result.savings)} accent />
               </div>
 
@@ -613,6 +655,42 @@ export function BillAudit({
                       </tr>
                     </tbody>
                   </table>
+                </div>
+
+                {/* Instant WhatsApp & Copy Share Button */}
+                <div className="mt-4 border-t border-border/80 pt-4">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-xs font-bold text-foreground">
+                      📲 Share Bill Breakdown (فیملی کے ساتھ شیئر کریں):
+                    </span>
+                  </div>
+                  <ShareReportButton
+                    title={`Electricity Bill Audit — ${disco.name}`}
+                    urduTitle="بجلی کا بل و سلیب رپورٹ"
+                    category="bill"
+                    totalCostLabel={
+                      billViewPeriod === "daily" ? "Daily Power Cost" : "Estimated Total Bill"
+                    }
+                    totalCostValue={
+                      billViewPeriod === "daily"
+                        ? `${pkr(result.total / 30)} / day`
+                        : pkr(result.total)
+                    }
+                    dailyBurnValue={`${pkr(result.total / 30)} / day`}
+                    savingsValue={`${pkr(result.savings)} / month`}
+                    breakdown={[
+                      { label: "DISCO", value: disco.name },
+                      { label: "Billed Units", value: `${result.billedUnits} units` },
+                      {
+                        label: "Active Slab",
+                        value: result.slabRows.at(-1)?.label ?? "Protected",
+                      },
+                      { label: "Energy Charge", value: pkr(result.energyCost) },
+                      { label: "Taxes & FPA Surcharges", value: pkr(result.taxes) },
+                      { label: "Fixed & Meter Rent", value: pkr(result.fixed) },
+                    ]}
+                    advice={`Following top appliance savings tips cuts roughly ${pkr(result.savings)} from your next bill.`}
+                  />
                 </div>
               </div>
 
@@ -709,10 +787,10 @@ function LifelineIndicator({ units }: { units: number }) {
   const status = lifelineStatus(units);
   const tone =
     status.tone === "good"
-      ? "border border-emerald-500/50 bg-gradient-to-br from-emerald-500/15 via-slate-900/90 to-slate-950/95 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15),0_0_28px_-4px_rgba(16,185,129,0.3)] urgency-emerald"
+      ? "border border-emerald-500/40 bg-emerald-950/30"
       : status.tone === "warn"
-        ? "border border-amber-500/50 bg-gradient-to-br from-amber-500/15 via-slate-900/90 to-slate-950/95 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15),0_0_28px_-4px_rgba(245,158,11,0.35)] urgency-amber"
-        : "border border-rose-500/60 bg-gradient-to-br from-rose-500/15 via-slate-900/90 to-slate-950/95 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15),0_0_32px_-4px_rgba(244,63,94,0.4)] urgency-crimson";
+        ? "border border-amber-500/40 bg-amber-950/30"
+        : "border border-rose-500/40 bg-rose-950/30";
 
   const badgeCls =
     status.tone === "good"
@@ -722,11 +800,11 @@ function LifelineIndicator({ units }: { units: number }) {
         : "badge-critical";
 
   return (
-    <div className={`mt-5 rounded-2xl p-4.5 backdrop-blur-2xl ${tone}`}>
+    <div className={`mt-5 rounded-2xl p-4.5 backdrop-blur-md ${tone}`}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 w-full">
           <ShieldCheck
-            className={`mt-0.5 h-5 w-5 shrink-0 ${
+            className={`mt-0.5 h-6 w-6 shrink-0 ${
               status.tone === "good"
                 ? "text-emerald-400"
                 : status.tone === "warn"
@@ -735,25 +813,34 @@ function LifelineIndicator({ units }: { units: number }) {
             }`}
           />
           <div className="min-w-0 flex-1">
-            <div className="flex items-center justify-between gap-2">
-              <p className="text-sm font-bold text-white tracking-tight">{status.title}</p>
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <p className="text-base font-bold text-white tracking-tight">{status.title}</p>
               <span className={badgeCls}>
                 {status.tone === "good"
-                  ? "Protected"
+                  ? "Protected (200U Lifeline Safe)"
                   : status.tone === "warn"
-                    ? "Near Surcharge"
-                    : "Surcharge Active"}
+                    ? "Khatray Ki Ghanti (Near 200U)"
+                    : "Surcharge Active (Non-Protected)"}
               </span>
             </div>
-            <p className="mt-1 text-xs text-slate-300 leading-relaxed">{status.message}</p>
-            <div className="mt-3">
-              <CyberProgressBar
-                currentUnits={units}
-                maxUnits={700}
-                showHeadroom={true}
-                label="NEPRA Slab Boundary Meter"
-              />
-            </div>
+            <p className="mt-1.5 text-sm text-slate-300 leading-relaxed">{status.message}</p>
+            {status.unitsToNextTier !== null && (
+              <div className="mt-3 flex items-center gap-3">
+                <div className="h-2.5 flex-1 max-w-sm overflow-hidden rounded-full bg-slate-800">
+                  <div
+                    className={`h-full rounded-full ${
+                      status.tone === "good" ? "progress-fill-emerald" : "progress-fill-amber"
+                    }`}
+                    style={{
+                      width: `${Math.min(100, Math.max(10, ((200 - status.unitsToNextTier) / 200) * 100))}%`,
+                    }}
+                  />
+                </div>
+                <span className="text-xs font-bold text-emerald-400 font-mono">
+                  {Math.max(0, Math.round(status.unitsToNextTier))} Units Bachay Hain
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -766,10 +853,10 @@ function BudgetGuardCard({ verdict, budget }: { verdict: BudgetVerdict; budget: 
   const isClose = verdict.status === "close";
 
   const cls = isOver
-    ? "border border-rose-500/60 bg-gradient-to-br from-rose-500/15 via-slate-900/90 to-slate-950/95 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.18),0_0_32px_-4px_rgba(244,63,94,0.4)] urgency-crimson"
+    ? "border border-rose-500/40 bg-rose-950/25"
     : isClose
-      ? "border border-amber-500/50 bg-gradient-to-br from-amber-500/15 via-slate-900/90 to-slate-950/95 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.18),0_0_28px_-4px_rgba(245,158,11,0.35)] urgency-amber"
-      : "border border-emerald-500/50 bg-gradient-to-br from-emerald-500/15 via-slate-900/90 to-slate-950/95 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.18),0_0_28px_-4px_rgba(16,185,129,0.3)] urgency-emerald";
+      ? "border border-amber-500/40 bg-amber-950/25"
+      : "border border-emerald-500/40 bg-emerald-950/25";
 
   const barCls = isOver
     ? "progress-fill-danger"
@@ -780,61 +867,53 @@ function BudgetGuardCard({ verdict, budget }: { verdict: BudgetVerdict; budget: 
   const badgeCls = isOver ? "badge-critical" : isClose ? "badge-warning" : "badge-safe";
 
   return (
-    <div className={`rounded-2xl p-5 backdrop-blur-2xl ${cls}`}>
+    <div className={`rounded-2xl p-5 backdrop-blur-md ${cls}`}>
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.08] pb-3">
-        <p className="flex items-center gap-2 text-sm font-bold text-white tracking-tight">
+        <p className="flex items-center gap-2 text-base font-bold text-white tracking-tight">
           <Wallet
-            className={`h-4 w-4 ${isOver ? "text-rose-400" : isClose ? "text-amber-400" : "text-emerald-400"}`}
+            className={`h-5 w-5 ${isOver ? "text-rose-400" : isClose ? "text-amber-400" : "text-emerald-400"}`}
           />
-          Monthly Household Budget Guard
+          Ghar Ka Monthly Bijli Budget Guard
         </p>
         <span className={badgeCls}>{verdict.headline}</span>
       </div>
 
-      <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-[auto_minmax(0,1fr)] items-center">
-        {/* SVG Circular Progress Ring */}
-        <CyberProgressRing
-          value={Math.round(verdict.usedPct)}
-          max={100}
-          label="Budget Exhaustion"
-          unit="%"
-          size={130}
-          icon={Wallet}
-          thresholds={{ warning: 75, critical: 95 }}
-          subtext={`Cap: ${pkr(budget)}`}
-        />
-
-        {/* Detailed Breakdown */}
-        <div className="space-y-3">
+      <div className="mt-4 space-y-3">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
           <div>
             <span className="text-xs font-medium uppercase tracking-wider text-slate-400">
-              Projected Monthly Spend
+              Andaza Kharcha (Projected Bill)
             </span>
-            <p className="mt-0.5 text-2xl font-black tracking-tight text-white">
+            <p className="mt-0.5 text-3xl font-black tracking-tight text-white">
               {pkr(Math.round((budget * verdict.usedPct) / 100))}{" "}
-              <span className="text-xs font-normal text-muted-foreground">
-                of {pkr(budget)} limit
+              <span className="text-sm font-normal text-muted-foreground">
+                (Budget Had: {pkr(budget)})
               </span>
             </p>
           </div>
-
-          <div className="progress-track">
-            <div className={barCls} style={{ width: `${Math.min(100, verdict.usedPct)}%` }} />
+          <div className="text-right">
+            <span className="text-2xl font-black text-white">{Math.round(verdict.usedPct)}%</span>
+            <span className="block text-xs text-muted-foreground">Budget Istemal</span>
           </div>
-
-          <p className="text-xs leading-relaxed text-slate-300">
-            {verdict.difference > 0 ? (
-              <span className="font-semibold text-rose-400">
-                Projected bill is {pkr(verdict.difference)} above your limit!
-              </span>
-            ) : (
-              <span className="font-semibold text-emerald-400">
-                You have {pkr(Math.abs(verdict.difference))} of financial room left.
-              </span>
-            )}{" "}
-            {verdict.advice}
-          </p>
         </div>
+
+        <div className="progress-track">
+          <div className={barCls} style={{ width: `${Math.min(100, verdict.usedPct)}%` }} />
+        </div>
+
+        <p className="text-sm leading-relaxed text-slate-300 pt-1">
+          {verdict.difference > 0 ? (
+            <span className="font-bold text-rose-400">
+              Khabardaar: Aapka bill budget se {pkr(verdict.difference)} barh gaya hai!{" "}
+            </span>
+          ) : (
+            <span className="font-bold text-emerald-400">
+              Shabash: Aapke paas abhi {pkr(Math.abs(verdict.difference))} ki bachat ka margin
+              mojood hai.{" "}
+            </span>
+          )}
+          {verdict.advice}
+        </p>
       </div>
     </div>
   );

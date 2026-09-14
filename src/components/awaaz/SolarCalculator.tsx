@@ -20,7 +20,6 @@ import {
 } from "@/lib/awaaz-solar";
 import { discos, pkr, slabBreakdownFor } from "@/lib/awaaz-data";
 import { SectionHead, Field, Stat, EmptyState } from "@/components/awaaz/BillAudit";
-import { CyberProgressRing } from "@/components/awaaz/CyberProgressRing";
 
 type Props = {
   monthlyUnits: number;
@@ -258,60 +257,48 @@ export function SolarCalculator({ monthlyUnits, discoId }: Props) {
               </div>
 
               {/* Battery & backup */}
-              <div className="cyber-glass-card p-5.5">
-                <h4 className="mb-4 flex items-center justify-between gap-2 text-sm font-bold text-white tracking-tight">
+              <div className="glass-card p-5 shadow-sm">
+                <h4 className="mb-3 flex items-center justify-between gap-2 text-sm font-bold text-white tracking-tight">
                   <span className="flex items-center gap-2">
                     <BatteryCharging className="h-4 w-4 text-emerald-400" /> Battery & Load-Shedding
                     Backup
                   </span>
-                  <span className="terminal-badge text-[10px]">STORAGE TELEMETRY</span>
+                  <span className="badge-safe">
+                    {Math.round(calculated.independencePct)}% Solar Self-Sufficiency
+                  </span>
                 </h4>
-
-                <div className="grid grid-cols-1 sm:grid-cols-[auto_minmax(0,1fr)] gap-5 items-center mb-4">
-                  <CyberProgressRing
-                    value={Math.round(calculated.independencePct)}
-                    max={100}
-                    label="Grid Independence"
-                    unit="%"
-                    size={130}
-                    icon={Sun}
-                    thresholds={{ warning: 40, critical: 75 }}
-                    inverseUrgency={true}
-                    subtext="Solar + Battery autonomy ratio"
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  <Stat label="Battery capacity" value={`${calculated.batteryKwh} kWh`} />
+                  <Stat
+                    label="Backup hours"
+                    value={`${calculated.backupHours.toFixed(1)} hrs`}
+                    accent
                   />
-
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      <Stat label="Battery capacity" value={`${calculated.batteryKwh} kWh`} />
-                      <Stat
-                        label="Backup hours"
-                        value={`${calculated.backupHours.toFixed(1)} hrs`}
-                        accent
-                      />
-                    </div>
-
-                    <div>
-                      <div className="mb-1.5 flex items-center justify-between text-xs text-muted-foreground">
-                        <span>Essential load backup</span>
-                        <span className="font-mono text-emerald-400 font-bold">
-                          {calculated.backupHours.toFixed(1)} hours (fans + lights + fridge)
-                        </span>
-                      </div>
-                      <div className="progress-track">
-                        <div
-                          className="progress-fill-emerald"
-                          style={{
-                            width: `${Math.min(100, (calculated.backupHours / Math.max(loadSheddingHours, 1)) * 100)}%`,
-                          }}
-                        />
-                      </div>
-                      <p className="mt-2 text-xs text-muted-foreground">
-                        {calculated.backupHours >= loadSheddingHours
-                          ? `Battery covers your full ${loadSheddingHours}h daily load-shedding with room to spare.`
-                          : `Battery covers ${calculated.backupHours.toFixed(1)}h of your ${loadSheddingHours}h daily load-shedding — consider a larger battery.`}
-                      </p>
-                    </div>
+                  <Stat
+                    label="Grid independence"
+                    value={`${Math.round(calculated.independencePct)}%`}
+                  />
+                </div>
+                <div className="mt-3.5">
+                  <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
+                    <span>Essential load backup</span>
+                    <span className="font-mono text-emerald-400 font-bold">
+                      {calculated.backupHours.toFixed(1)} hours (fans + lights + fridge)
+                    </span>
                   </div>
+                  <div className="progress-track">
+                    <div
+                      className="progress-fill-emerald"
+                      style={{
+                        width: `${Math.min(100, (calculated.backupHours / Math.max(loadSheddingHours, 1)) * 100)}%`,
+                      }}
+                    />
+                  </div>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {calculated.backupHours >= loadSheddingHours
+                      ? `Battery covers your full ${loadSheddingHours}h daily load-shedding with room to spare.`
+                      : `Battery covers ${calculated.backupHours.toFixed(1)}h of your ${loadSheddingHours}h daily load-shedding — consider a larger battery.`}
+                  </p>
                 </div>
               </div>
 

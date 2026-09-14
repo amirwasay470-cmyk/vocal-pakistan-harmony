@@ -9,6 +9,7 @@ import {
   Route as RouteIcon,
   Flame,
   Sparkles,
+  Glasses,
 } from "lucide-react";
 import { BillAudit } from "@/components/awaaz/BillAudit";
 import { RecipeMaker } from "@/components/awaaz/RecipeMaker";
@@ -19,7 +20,7 @@ import { VampireDetector } from "@/components/awaaz/VampireDetector";
 import { CommuteCalculator } from "@/components/awaaz/CommuteCalculator";
 import { GasCookingCalculator } from "@/components/awaaz/GasCookingCalculator";
 import { LiveFinancialTicker } from "@/components/awaaz/LiveFinancialTicker";
-import { CyberExecutivePulse } from "@/components/awaaz/CyberExecutivePulse";
+import { usePersistentState } from "@/lib/use-persistent-state";
 import type { AdvisorContext } from "@/lib/advisor-engine";
 
 export const Route = createFileRoute("/")({
@@ -51,7 +52,7 @@ const tabs = [
   { id: "bills", label: "Bill Audit", short: "Bills", icon: Zap },
   { id: "optimizer", label: "Solar & Energy Optimizer", short: "Optimizer", icon: Sun },
   { id: "commute", label: "Commute & Fuel", short: "Commute", icon: RouteIcon },
-  { id: "cooking", label: "Cooking Gas", short: "Cooking", icon: Flame },
+  { id: "cooking", label: "Cooking Energy Management", short: "Cooking Gas", icon: Flame },
   { id: "recipes", label: "Leftover Recipes", short: "Recipes", icon: ChefHat },
   { id: "market", label: "Market Value", short: "Market", icon: ShoppingBasket },
 ] as const;
@@ -61,7 +62,7 @@ type TabId = (typeof tabs)[number]["id"];
 function Index() {
   const [tab, setTab] = useState<TabId>("bills");
   const [advisorCtx, setAdvisorCtx] = useState<AdvisorContext | null>(null);
-  const [advisorMode, setAdvisorMode] = useState<"floating" | "embedded">("floating");
+  const [eyeglassMode, setEyeglassMode] = usePersistentState<boolean>("awaaz_eyeglass_mode", false);
 
   const liveUnits = advisorCtx?.billedUnits ?? 412;
   const liveDiscoId = advisorCtx?.disco.id ?? "k-electric";
@@ -69,7 +70,11 @@ function Index() {
   const liveAppliances = advisorCtx?.appliances ?? [];
 
   return (
-    <div className="relative min-h-screen bg-[#030712] text-foreground pb-24 md:pb-0 selection:bg-emerald-500/30 selection:text-emerald-200 overflow-x-hidden">
+    <div
+      className={`relative min-h-screen bg-[#030712] text-foreground pb-24 md:pb-0 selection:bg-emerald-500/30 selection:text-emerald-200 overflow-x-hidden ${
+        eyeglassMode ? "awaaz-eyeglass-mode" : ""
+      }`}
+    >
       {/* Live Financial Ticker & Inflation Marquee */}
       <LiveFinancialTicker />
 
@@ -81,69 +86,93 @@ function Index() {
         <div className="absolute -bottom-[10%] right-[10%] h-[500px] w-[500px] rounded-full bg-teal-500/8 blur-[140px]" />
       </div>
 
-      {/* Premium Fintech Top Navigation Bar */}
+      {/* Awami Bachat Navigation Bar */}
       <header className="relative z-40 sticky top-0 border-b border-white/[0.08] bg-slate-950/90 backdrop-blur-2xl shadow-[0_12px_40px_rgba(0,0,0,0.7)]">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 items-center gap-3">
-            <span className="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-emerald-500/40 bg-gradient-to-br from-emerald-500/25 to-emerald-600/15 text-emerald-400 shadow-[0_0_22px_rgba(16,185,129,0.4)] neon-ring-emerald">
-              <Megaphone className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-emerald-400 neon-pulse-emerald" />
-            </span>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h1 className="truncate text-lg font-bold tracking-tight text-white">
-                  Awaaz-e-Pakistan
-                </h1>
-                <span className="terminal-badge text-[10px]">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
-                  FINTECH HUD
-                </span>
+          <div className="flex min-w-0 items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <span className="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-emerald-500/40 bg-emerald-500/20 text-emerald-400 shadow-md">
+                <Megaphone className="h-5 w-5" />
+                <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-emerald-400" />
+              </span>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <h1 className="truncate text-lg font-bold tracking-tight text-white">
+                    Awaaz-e-Pakistan
+                  </h1>
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-emerald-950/80 text-emerald-300 border border-emerald-500/40">
+                    Awami Bachat Portal
+                  </span>
+                </div>
+                <p className="truncate text-xs text-muted-foreground">
+                  Har Pakistani ghar ki bachat — Bijli, Solar, Petrol, Gas & Bazaar
+                </p>
               </div>
-              <p className="truncate text-xs text-muted-foreground">
-                Har ghar ki bachat — bills, solar, bazaar
-              </p>
             </div>
+
+            {/* High-Contrast "Eyeglass" Text Scaling Toggle */}
+            <button
+              type="button"
+              onClick={() => setEyeglassMode(!eyeglassMode)}
+              title="Toggle Eyeglass Mode (عینک موڈ - بڑا فونٹ اور ہائی کنٹراسٹ)"
+              className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold transition-all active:scale-95 sm:hidden ${
+                eyeglassMode
+                  ? "border-amber-400 bg-amber-500/20 text-amber-300 shadow-[0_0_15px_rgba(251,191,36,0.25)]"
+                  : "border-white/10 bg-slate-900/70 text-slate-300 hover:border-white/20 hover:text-white"
+              }`}
+            >
+              <Glasses className="h-3.5 w-3.5" />
+              <span>{eyeglassMode ? "👓 عینک موڈ (On)" : "👓 عینک موڈ"}</span>
+            </button>
           </div>
 
-          <nav className="flex shrink-0 items-center gap-1.5 overflow-x-auto whitespace-nowrap rounded-xl p-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {tabs.map((t) => {
-              const Icon = t.icon;
-              const active = tab === t.id;
-              return (
-                <button
-                  key={t.id}
-                  onClick={() => setTab(t.id)}
-                  aria-current={active ? "page" : undefined}
-                  className={`inline-flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] sm:text-sm ${
-                    active
-                      ? "border border-emerald-500/50 bg-emerald-500/20 text-emerald-300 shadow-[0_0_25px_rgba(16,185,129,0.3)]"
-                      : "border border-transparent text-slate-400 hover:border-white/[0.08] hover:bg-slate-900/60 hover:text-white"
-                  }`}
-                >
-                  <Icon
-                    className={`h-4 w-4 shrink-0 ${active ? "text-emerald-400 animate-pulse" : ""}`}
-                  />
-                  {t.label}
-                </button>
-              );
-            })}
-          </nav>
+          <div className="flex items-center gap-2">
+            <nav className="flex shrink-0 items-center gap-1.5 overflow-x-auto whitespace-nowrap rounded-xl p-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {tabs.map((t) => {
+                const Icon = t.icon;
+                const active = tab === t.id;
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => setTab(t.id)}
+                    aria-current={active ? "page" : undefined}
+                    className={`inline-flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all sm:text-sm ${
+                      active
+                        ? "border border-emerald-500/50 bg-emerald-500/20 text-emerald-300 shadow-sm"
+                        : "border border-transparent text-slate-400 hover:border-white/[0.08] hover:bg-slate-900/60 hover:text-white"
+                    }`}
+                  >
+                    <Icon className={`h-4 w-4 shrink-0 ${active ? "text-emerald-400" : ""}`} />
+                    {t.label}
+                  </button>
+                );
+              })}
+            </nav>
+
+            {/* Desktop Eyeglass Button */}
+            <button
+              type="button"
+              onClick={() => setEyeglassMode(!eyeglassMode)}
+              title="Toggle Eyeglass Mode (عینک موڈ - بڑا فونٹ اور ہائی کنٹراسٹ)"
+              className={`hidden md:inline-flex shrink-0 items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold transition-all active:scale-95 ${
+                eyeglassMode
+                  ? "border-amber-400 bg-amber-500/20 text-amber-300 shadow-[0_0_15px_rgba(251,191,36,0.25)]"
+                  : "border-white/10 bg-slate-900/70 text-slate-300 hover:border-white/20 hover:text-white"
+              }`}
+            >
+              <Glasses className="h-4 w-4 text-amber-400" />
+              <span>{eyeglassMode ? "👓 عینک موڈ (On)" : "👓 عینک موڈ (Bara Font)"}</span>
+            </button>
+          </div>
         </div>
         <div className="flag-accent h-1 w-full" />
       </header>
 
       <main className="relative z-10 mx-auto max-w-6xl px-4 py-6">
-        {/* Executive Pulse Command Center with Progress Rings */}
-        <CyberExecutivePulse advisorCtx={advisorCtx} onNavigateTab={setTab} />
-
         {tab === "bills" && (
           <div key="bills" className="space-y-8 tab-enter">
             <BillAudit key="bills" onContextChange={setAdvisorCtx} />
-            <AdvisorCardSection
-              advisorCtx={advisorCtx}
-              advisorMode={advisorMode}
-              setAdvisorMode={setAdvisorMode}
-            />
+            <AdvisorCardSection advisorCtx={advisorCtx} />
           </div>
         )}
         {tab === "optimizer" && (
@@ -156,51 +185,31 @@ function Index() {
               discoId={liveDiscoId}
               appliances={liveAppliances}
             />
-            <AdvisorCardSection
-              advisorCtx={advisorCtx}
-              advisorMode={advisorMode}
-              setAdvisorMode={setAdvisorMode}
-            />
+            <AdvisorCardSection advisorCtx={advisorCtx} />
           </div>
         )}
         {tab === "commute" && (
           <div key="commute" className="space-y-8 tab-enter">
             <CommuteCalculator />
-            <AdvisorCardSection
-              advisorCtx={advisorCtx}
-              advisorMode={advisorMode}
-              setAdvisorMode={setAdvisorMode}
-            />
+            <AdvisorCardSection advisorCtx={advisorCtx} />
           </div>
         )}
         {tab === "cooking" && (
           <div key="cooking" className="space-y-8 tab-enter">
             <GasCookingCalculator />
-            <AdvisorCardSection
-              advisorCtx={advisorCtx}
-              advisorMode={advisorMode}
-              setAdvisorMode={setAdvisorMode}
-            />
+            <AdvisorCardSection advisorCtx={advisorCtx} />
           </div>
         )}
         {tab === "recipes" && (
           <div key="recipes" className="space-y-8 tab-enter">
             <RecipeMaker />
-            <AdvisorCardSection
-              advisorCtx={advisorCtx}
-              advisorMode={advisorMode}
-              setAdvisorMode={setAdvisorMode}
-            />
+            <AdvisorCardSection advisorCtx={advisorCtx} />
           </div>
         )}
         {tab === "market" && (
           <div key="market" className="space-y-8 tab-enter">
             <MarketFinder />
-            <AdvisorCardSection
-              advisorCtx={advisorCtx}
-              advisorMode={advisorMode}
-              setAdvisorMode={setAdvisorMode}
-            />
+            <AdvisorCardSection advisorCtx={advisorCtx} />
           </div>
         )}
       </main>
@@ -214,8 +223,6 @@ function Index() {
           </p>
         </div>
       </footer>
-
-      {advisorMode === "floating" && <EnergyAdvisor context={advisorCtx} mode="floating" />}
 
       {/* Mobile Floating Bottom Bar */}
       <nav className="fixed inset-x-0 bottom-4 z-40 flex justify-center px-4 md:hidden">
@@ -245,64 +252,10 @@ function Index() {
   );
 }
 
-function AdvisorCardSection({
-  advisorCtx,
-  advisorMode,
-  setAdvisorMode,
-}: {
-  advisorCtx: AdvisorContext | null;
-  advisorMode: "floating" | "embedded";
-  setAdvisorMode: (m: "floating" | "embedded") => void;
-}) {
+function AdvisorCardSection({ advisorCtx }: { advisorCtx: AdvisorContext | null }) {
   return (
-    <div className="space-y-4 pt-8 border-t border-white/[0.08]">
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-4.5 backdrop-blur-xl shadow-[inset_0_1px_0_0_rgba(255,255,255,0.12),0_8px_30px_rgb(0,0,0,0.4)] transition-all duration-300 hover:border-emerald-500/50 hover:shadow-[0_0_25px_rgba(16,185,129,0.15)]">
-        <div className="flex items-center gap-3.5">
-          <div className="relative grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-emerald-400/50 bg-emerald-500/20 text-emerald-400 shadow-[0_0_22px_rgba(16,185,129,0.4)] neon-ring-emerald">
-            <Zap className="h-6 w-6 animate-pulse" />
-            <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-emerald-400 neon-pulse-emerald" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold tracking-tight text-white sm:text-lg">
-                AI Energy Advisor
-              </h2>
-              <span className="terminal-badge text-[10px]">LIVE COPILOT</span>
-            </div>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Intelligent slab protection, NEPRA tariff guidance, and grocery inflation swaps
-            </p>
-          </div>
-        </div>
-
-        {/* Mode Switcher */}
-        <div className="flex items-center gap-1.5 rounded-xl border border-white/[0.09] bg-slate-950/80 p-1 backdrop-blur-md">
-          <button
-            type="button"
-            onClick={() => setAdvisorMode("floating")}
-            className={`rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all duration-200 ${
-              advisorMode === "floating"
-                ? "border border-emerald-500/40 bg-emerald-500/20 text-emerald-300 shadow-[0_0_14px_rgba(16,185,129,0.25)]"
-                : "text-slate-400 hover:text-white"
-            }`}
-          >
-            Floating Widget
-          </button>
-          <button
-            type="button"
-            onClick={() => setAdvisorMode("embedded")}
-            className={`rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all duration-200 ${
-              advisorMode === "embedded"
-                ? "border border-emerald-500/40 bg-emerald-500/20 text-emerald-300 shadow-[0_0_14px_rgba(16,185,129,0.25)]"
-                : "text-slate-400 hover:text-white"
-            }`}
-          >
-            Embedded Console
-          </button>
-        </div>
-      </div>
-
-      {advisorMode === "embedded" && <EnergyAdvisor context={advisorCtx} mode="embedded" />}
+    <div className="pt-8 border-t border-white/[0.08]">
+      <EnergyAdvisor context={advisorCtx} />
     </div>
   );
 }

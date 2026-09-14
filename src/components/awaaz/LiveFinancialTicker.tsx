@@ -13,7 +13,9 @@ import {
   Clock,
   Sparkles,
   ShieldCheck,
+  RefreshCw,
 } from "lucide-react";
+import { useLiveRates } from "@/lib/live-sync";
 
 export interface TickerItem {
   id: string;
@@ -46,12 +48,12 @@ export const TICKER_DATA: TickerItem[] = [
     id: "petrol-rate",
     category: "fuel",
     label: "Petrol (Super)",
-    value: "Rs. 373.00 / L",
-    change: "Current OGRA Fix",
+    value: "Rs. 375.82 / L",
+    change: "OGRA Notification",
     trend: "neutral",
-    impact: "High fuel levy + customs surcharge in effect.",
+    impact: "High fuel levy (PDL Rs. 60) + customs surcharge in effect.",
     details:
-      "Includes Petroleum Development Levy (PDL) and dealer margins. Crucial threshold for motorcycle and car commute budgeting.",
+      "Official OGRA notified consumer pump price. Crucial benchmark for motorcycle and car commute budgeting.",
     icon: Fuel,
     accent: "crimson",
   },
@@ -59,8 +61,8 @@ export const TICKER_DATA: TickerItem[] = [
     id: "diesel-rate",
     category: "fuel",
     label: "High-Speed Diesel (HSD)",
-    value: "Rs. 384.50 / L",
-    change: "+Rs. 4.20 (▲)",
+    value: "Rs. 403.32 / L",
+    change: "OGRA Notification",
     trend: "up",
     impact: "Directly escalates city logistics & mandi freight transport rates.",
     details:
@@ -151,6 +153,7 @@ export const TICKER_DATA: TickerItem[] = [
 export function LiveFinancialTicker() {
   const [selectedItem, setSelectedItem] = useState<TickerItem | null>(null);
   const [currentTime, setCurrentTime] = useState<string>("");
+  const { fuel, isSyncing, lastSyncText, refreshRates } = useLiveRates();
 
   useEffect(() => {
     const updateTime = () => {
@@ -168,6 +171,17 @@ export function LiveFinancialTicker() {
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  // Update dynamic fuel values from live sync
+  const dynamicTickerData = TICKER_DATA.map((item) => {
+    if (item.id === "petrol-rate") {
+      return { ...item, value: `Rs. ${fuel.petrol.toFixed(2)} / L` };
+    }
+    if (item.id === "diesel-rate") {
+      return { ...item, value: `Rs. ${fuel.diesel.toFixed(2)} / L` };
+    }
+    return item;
+  });
 
   return (
     <>
@@ -187,7 +201,7 @@ export function LiveFinancialTicker() {
           <div className="relative flex-1 overflow-hidden py-1.5">
             <div className="ticker-track flex items-center gap-6">
               {/* Duplicate array for seamless infinite looping */}
-              {[...TICKER_DATA, ...TICKER_DATA].map((item, index) => {
+              {[...dynamicTickerData, ...dynamicTickerData].map((item, index) => {
                 const Icon = item.icon;
                 const isUp = item.trend === "up";
                 const isDown = item.trend === "down";
@@ -238,10 +252,22 @@ export function LiveFinancialTicker() {
             </div>
           </div>
 
-          {/* Quick Info Trigger */}
-          <div className="hidden shrink-0 items-center border-l border-emerald-500/20 px-3 md:flex">
-            <span className="text-[10px] font-medium text-slate-500">
-              Hover to pause · Tap to audit
+          {/* Quick Live Sync Trigger */}
+          <div className="flex shrink-0 items-center gap-2 border-l border-emerald-500/20 px-3">
+            <button
+              type="button"
+              onClick={refreshRates}
+              disabled={isSyncing}
+              title="Click to re-fetch live OGRA & NEPRA feeds"
+              className="inline-flex items-center gap-1.5 rounded-md border border-emerald-500/30 bg-emerald-950/60 px-2 py-1 text-[10px] font-bold text-emerald-300 transition hover:bg-emerald-900 hover:text-white disabled:opacity-50"
+            >
+              <RefreshCw
+                className={`h-3 w-3 ${isSyncing ? "animate-spin text-emerald-400" : ""}`}
+              />
+              <span className="hidden sm:inline">{isSyncing ? "Syncing..." : "Live Sync"}</span>
+            </button>
+            <span className="hidden text-[10px] font-medium text-slate-400 md:inline">
+              {lastSyncText}
             </span>
           </div>
         </div>

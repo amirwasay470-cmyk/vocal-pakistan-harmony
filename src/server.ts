@@ -44,9 +44,22 @@ function isH3SwallowedErrorBody(body: string): boolean {
   }
 }
 
+import { OFFICIAL_LIVE_RATES } from "./lib/live-sync";
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      const url = new URL(request.url);
+      if (url.pathname === "/api/live-rates") {
+        return new Response(JSON.stringify(OFFICIAL_LIVE_RATES), {
+          status: 200,
+          headers: {
+            "content-type": "application/json; charset=utf-8",
+            "cache-control": "public, max-age=120",
+          },
+        });
+      }
+
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);

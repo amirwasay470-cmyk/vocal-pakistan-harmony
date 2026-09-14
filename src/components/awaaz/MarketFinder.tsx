@@ -23,6 +23,8 @@ import { SectionHead, EmptyState, Stat } from "./BillAudit";
 import { DailyCommodityRateBoard } from "./DailyCommodityRateBoard";
 import { BazaarChannelComparison } from "./BazaarChannelComparison";
 import { MarketInflationAdvisor } from "./MarketInflationAdvisor";
+import { usePersistentState } from "@/lib/use-persistent-state";
+import { ShareReportButton } from "@/components/awaaz/ShareReportButton";
 
 type ListEntry = { key: string; name: string; qty: number; card: PriceCard };
 
@@ -38,10 +40,10 @@ const starters = [
 ];
 
 export function MarketFinder() {
-  const [city, setCity] = useState<City>("Karachi");
-  const [view, setView] = useState<"rate_board" | "bazaar_comparison" | "advisor" | "search_route">(
-    "rate_board",
-  );
+  const [city, setCity] = usePersistentState<City>("awaaz_market_city", "Karachi");
+  const [view, setView] = usePersistentState<
+    "rate_board" | "bazaar_comparison" | "advisor" | "search_route"
+  >("awaaz_market_view", "rate_board");
   const [query, setQuery] = useState("");
   const [cards, setCards] = useState<PriceCard[]>([]);
   const [list, setList] = useState<ListEntry[]>([]);
@@ -406,6 +408,23 @@ export function MarketFinder() {
                     </div>
                   ))}
                 </div>
+              </div>
+
+              {/* Instant WhatsApp / Copy Shopping List Share */}
+              <div className="border-t border-border/80 pt-3">
+                <ShareReportButton
+                  title={`Smart Grocery Trip List (${city})`}
+                  urduTitle="سودا سلف خریداری لسٹ اور بچت پلان"
+                  category="bazaar"
+                  totalCostLabel="Smart Basket Total"
+                  totalCostValue={pkr(bestTotal)}
+                  savingsValue={`${pkr(worstTotal - bestTotal)} Bachat`}
+                  breakdown={list.map((it) => ({
+                    label: `${it.name} (Qty: ${it.qty})`,
+                    value: `Best: ${it.card.options[0]!.market} (${pkr(it.card.options[0]!.price * it.qty)})`,
+                  }))}
+                  advice={`Save ${pkr(worstTotal - bestTotal)} by visiting ${Object.keys(stops).join(" & ")}.`}
+                />
               </div>
             </div>
           )}

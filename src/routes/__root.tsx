@@ -80,7 +80,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "Awaaz-e-Pakistan" },
       {
         name: "description",
-        content: "Household savings toolkit for Pakistan: bills, leftovers and market prices.",
+        content:
+          "Household savings toolkit for Pakistan: utility bill audit, appliance coach, solar calculator, leftover recipe maker, and local market grocery value finder.",
+      },
+      {
+        property: "og:title",
+        content: "Awaaz-e-Pakistan",
+      },
+      {
+        property: "og:description",
+        content:
+          "Household savings toolkit for Pakistan: utility bill audit, appliance coach, solar calculator, leftover recipe maker, and local market grocery value finder.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
