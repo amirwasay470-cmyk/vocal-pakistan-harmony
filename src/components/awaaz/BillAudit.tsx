@@ -42,7 +42,7 @@ import {
 import { BillScanner } from "@/components/awaaz/BillScanner";
 import type { BillScan } from "@/lib/bill-scan.functions";
 import type { AdvisorContext } from "@/lib/advisor-engine";
-import { useLiveRates } from "@/lib/live-sync";
+
 import { usePersistentState } from "@/lib/use-persistent-state";
 import { ShareReportButton } from "@/components/awaaz/ShareReportButton";
 
@@ -92,7 +92,6 @@ export function BillAudit({
 }: {
   onContextChange?: (ctx: AdvisorContext) => void;
 }) {
-  const { electricity } = useLiveRates();
   const [appliances, setAppliances] = useState<Appliance[]>(defaultAppliances);
   const [preset, setPreset] = useState<PresetId | null>(null);
   const [discoId, setDiscoId] = usePersistentState<string>("awaaz_disco_id", "k-electric");

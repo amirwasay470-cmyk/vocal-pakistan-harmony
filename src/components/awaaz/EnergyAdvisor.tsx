@@ -25,7 +25,8 @@ export function EnergyAdvisor({ context }: EnergyAdvisorProps) {
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const didInitRef = useRef(false);
 
   useEffect(() => {
     setMessages([
@@ -38,7 +39,14 @@ export function EnergyAdvisor({ context }: EnergyAdvisorProps) {
   }, []);
 
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Skip the initial greeting render so the page does not jump down on load.
+    if (!didInitRef.current) {
+      didInitRef.current = true;
+      return;
+    }
+    const container = containerRef.current;
+    if (!container) return;
+    container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
   }, [messages, isTyping]);
 
   const effectiveContext = context ?? createDefaultAdvisorContext();
@@ -115,7 +123,10 @@ export function EnergyAdvisor({ context }: EnergyAdvisorProps) {
       </div>
 
       {/* Messages Scroll Area */}
-      <div className="h-[320px] sm:h-[360px] space-y-3.5 overflow-y-auto p-4 sm:p-5">
+      <div
+        ref={containerRef}
+        className="h-[320px] sm:h-[360px] space-y-3.5 overflow-y-auto p-4 sm:p-5"
+      >
         {messages.map((msg) => (
           <div
             key={msg.id}
@@ -174,7 +185,6 @@ export function EnergyAdvisor({ context }: EnergyAdvisorProps) {
             </div>
           </div>
         )}
-        <div ref={scrollRef} />
       </div>
 
       {/* Suggestion Chips */}

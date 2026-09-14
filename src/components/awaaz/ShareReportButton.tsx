@@ -4,7 +4,7 @@ import { Share2, Copy, Check, MessageCircle } from "lucide-react";
 export interface ShareReportProps {
   title: string;
   urduTitle: string;
-  category: "bill" | "fuel" | "bazaar" | "gas";
+  category: "bill" | "fuel" | "bazaar" | "gas" | "recipe";
   totalCostLabel: string;
   totalCostValue: string;
   dailyBurnValue?: string;
