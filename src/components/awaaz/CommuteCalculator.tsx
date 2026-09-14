@@ -513,7 +513,7 @@ export function CommuteCalculator() {
 
   // Active vehicle model
   const activeModel = useMemo(() => {
-    return VEHICLE_MODELS.find((m) => m.id === selectedModelId) || VEHICLE_MODELS[0];
+    return VEHICLE_MODELS.find((m) => m.id === selectedModelId) || VEHICLE_MODELS[0]!;
   }, [selectedModelId]);
 
   // Dynamic fuel types with live sync rates
@@ -629,7 +629,7 @@ export function CommuteCalculator() {
     };
   }, [dailyKm, travelDays, isPublic, effectiveMileage, fuelPrice, activeModel, selectedStrategy]);
 
-  const fuelObj = FUEL_TYPES.find((f) => f.id === fuelId) || FUEL_TYPES[0];
+  const fuelObj = FUEL_TYPES.find((f) => f.id === fuelId) || FUEL_TYPES[0]!;
 
   return (
     <div className="tab-enter space-y-6">

@@ -491,7 +491,7 @@ export function calculateChannelBasket(
             : "vegetable";
 
     (["itwar_bazaar", "kirana", "superstore"] as ChannelId[]).forEach((ch) => {
-      const mult = CHANNEL_CATEGORY_MULTIPLIERS[ch][category];
+      const mult = CHANNEL_CATEGORY_MULTIPLIERS[ch][category] ?? 1;
       const unitPrice = Math.round(baseRate * mult);
       const lineTotal = unitPrice * qty;
 

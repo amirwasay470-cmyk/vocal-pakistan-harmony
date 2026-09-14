@@ -190,8 +190,8 @@ export function GasCookingCalculator() {
     setHasPipeline(true);
     setPipelineMmbtu(scan.unitsMmbtu);
     setPipelineSlabId(scan.slabId);
-    if (scan.totalPayable > 0) {
-      setPipelineBillPkr(scan.totalPayable);
+    if (scan.totalAmount > 0) {
+      setPipelineBillPkr(scan.totalAmount);
       setPipelineBillMethod("billPkr");
     } else {
       setPipelineBillMethod("mmbtu");
@@ -213,7 +213,7 @@ export function GasCookingCalculator() {
   const calculated = useMemo(() => {
     // 1. Pipeline cost
     let pipelineCost = 0;
-    const slab = PIPELINE_SLABS.find((s) => s.id === pipelineSlabId) || PIPELINE_SLABS[1];
+    const slab = PIPELINE_SLABS.find((s) => s.id === pipelineSlabId) || PIPELINE_SLABS[1]!;
 
     if (hasPipeline && pipelineSchedule !== "noConnection") {
       if (pipelineBillMethod === "billPkr") {
@@ -239,7 +239,7 @@ export function GasCookingCalculator() {
     const lpgPct = totalMonthlyCost > 0 ? (lpgCost / totalMonthlyCost) * 100 : 0;
 
     // 4. Savings with Tip
-    const tip = HYBRID_TIPS.find((t) => t.id === selectedTipId) || HYBRID_TIPS[0];
+    const tip = HYBRID_TIPS.find((t) => t.id === selectedTipId) || HYBRID_TIPS[0]!;
     // Tip saves mainly on the expensive portion (or combined cooking burn)
     const savings = totalMonthlyCost * tip.savingFraction;
     const optimizedMonthly = Math.max(0, totalMonthlyCost - savings);

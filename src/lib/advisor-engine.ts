@@ -69,7 +69,7 @@ export function createDefaultAdvisorContext(): AdvisorContext {
     lifelineTier: lifeline.title,
     unprotected: lifeline.tier === "unprotected",
     unitsToNextTier: lifeline.unitsToNextTier,
-    vampireMonthlyCost: vampire.cost,
+    vampireMonthlyCost: vampire.monthlyCost,
   };
 }
 

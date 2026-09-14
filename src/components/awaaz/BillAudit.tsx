@@ -92,7 +92,7 @@ export function BillAudit({
 }: {
   onContextChange?: (ctx: AdvisorContext) => void;
 }) {
-  const { electricity } = useLiveRates();
+  const { power: electricityRates } = useLiveRates();
   const [appliances, setAppliances] = useState<Appliance[]>(defaultAppliances);
   const [preset, setPreset] = useState<PresetId | null>(null);
   const [discoId, setDiscoId] = usePersistentState<string>("awaaz_disco_id", "k-electric");
