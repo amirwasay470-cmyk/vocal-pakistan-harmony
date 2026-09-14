@@ -123,7 +123,10 @@ export function EnergyAdvisor({ context }: EnergyAdvisorProps) {
       </div>
 
       {/* Messages Scroll Area */}
-      <div className="h-[320px] sm:h-[360px] space-y-3.5 overflow-y-auto p-4 sm:p-5">
+      <div
+        ref={containerRef}
+        className="h-[320px] sm:h-[360px] space-y-3.5 overflow-y-auto p-4 sm:p-5"
+      >
         {messages.map((msg) => (
           <div
             key={msg.id}
@@ -182,7 +185,6 @@ export function EnergyAdvisor({ context }: EnergyAdvisorProps) {
             </div>
           </div>
         )}
-        <div ref={scrollRef} />
       </div>
 
       {/* Suggestion Chips */}
