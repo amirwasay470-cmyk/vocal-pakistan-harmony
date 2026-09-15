@@ -88,23 +88,23 @@ function Index() {
 
       {/* Awami Bachat Navigation Bar */}
       <header className="relative z-40 sticky top-0 border-b border-white/[0.08] bg-slate-950/90 backdrop-blur-2xl shadow-[0_12px_40px_rgba(0,0,0,0.7)]">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <span className="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-emerald-500/40 bg-emerald-500/20 text-emerald-400 shadow-md">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 sm:gap-5 sm:py-4">
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-emerald-500/40 bg-emerald-500/20 text-emerald-400 shadow-md sm:h-11 sm:w-11">
                 <Megaphone className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-emerald-400" />
+                <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-emerald-400" />
               </span>
               <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <h1 className="truncate text-lg font-bold tracking-tight text-white">
+                <div className="flex min-w-0 flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-2">
+                  <h1 className="max-w-full truncate text-lg font-bold tracking-tight text-white sm:text-xl">
                     Awaaz-e-Pakistan
                   </h1>
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-emerald-950/80 text-emerald-300 border border-emerald-500/40">
+                  <span className="shrink-0 rounded-md border border-emerald-500/40 bg-emerald-950/80 px-2 py-0.5 text-[10px] font-bold text-emerald-300 sm:text-[11px]">
                     Awami Bachat Portal
                   </span>
                 </div>
-                <p className="truncate text-xs text-muted-foreground">
+                <p className="mt-1 truncate text-xs text-muted-foreground">
                   Har Pakistani ghar ki bachat — Bijli, Solar, Petrol, Gas & Bazaar
                 </p>
               </div>
@@ -114,29 +114,36 @@ function Index() {
             <button
               type="button"
               onClick={() => setEyeglassMode(!eyeglassMode)}
+              aria-label="Toggle Eyeglass Mode"
               title="Toggle Eyeglass Mode (عینک موڈ - بڑا فونٹ اور ہائی کنٹراسٹ)"
-              className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold transition-all active:scale-95 sm:hidden ${
+              className={`inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl border px-2.5 text-xs font-bold transition-all active:scale-95 sm:px-3 ${
                 eyeglassMode
                   ? "border-amber-400 bg-amber-500/20 text-amber-300 shadow-[0_0_15px_rgba(251,191,36,0.25)]"
                   : "border-white/10 bg-slate-900/70 text-slate-300 hover:border-white/20 hover:text-white"
               }`}
             >
-              <Glasses className="h-3.5 w-3.5" />
-              <span>{eyeglassMode ? "👓 عینک موڈ (On)" : "👓 عینک موڈ"}</span>
+              <Glasses className="h-4 w-4 shrink-0 text-amber-400" />
+              <span className="hidden sm:inline">
+                {eyeglassMode ? "عینک موڈ (On)" : "عینک موڈ (Bara Font)"}
+              </span>
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
-            <nav className="flex shrink-0 items-center gap-1.5 overflow-x-auto whitespace-nowrap rounded-xl p-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="border-t border-white/[0.06] px-2 sm:px-4">
+            <nav
+              aria-label="Main tools"
+              className="flex min-w-0 items-center gap-1.5 overflow-x-auto overscroll-x-contain whitespace-nowrap py-2 [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-2 [&::-webkit-scrollbar]:hidden"
+            >
               {tabs.map((t) => {
                 const Icon = t.icon;
                 const active = tab === t.id;
                 return (
                   <button
+                    type="button"
                     key={t.id}
                     onClick={() => setTab(t.id)}
                     aria-current={active ? "page" : undefined}
-                    className={`inline-flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all sm:text-sm ${
+                    className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all sm:text-sm lg:flex-1 lg:justify-center ${
                       active
                         ? "border border-emerald-500/50 bg-emerald-500/20 text-emerald-300 shadow-sm"
                         : "border border-transparent text-slate-400 hover:border-white/[0.08] hover:bg-slate-900/60 hover:text-white"
@@ -148,21 +155,6 @@ function Index() {
                 );
               })}
             </nav>
-
-            {/* Desktop Eyeglass Button */}
-            <button
-              type="button"
-              onClick={() => setEyeglassMode(!eyeglassMode)}
-              title="Toggle Eyeglass Mode (عینک موڈ - بڑا فونٹ اور ہائی کنٹراسٹ)"
-              className={`hidden md:inline-flex shrink-0 items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold transition-all active:scale-95 ${
-                eyeglassMode
-                  ? "border-amber-400 bg-amber-500/20 text-amber-300 shadow-[0_0_15px_rgba(251,191,36,0.25)]"
-                  : "border-white/10 bg-slate-900/70 text-slate-300 hover:border-white/20 hover:text-white"
-              }`}
-            >
-              <Glasses className="h-4 w-4 text-amber-400" />
-              <span>{eyeglassMode ? "👓 عینک موڈ (On)" : "👓 عینک موڈ (Bara Font)"}</span>
-            </button>
           </div>
         </div>
         <div className="flag-accent h-1 w-full" />
