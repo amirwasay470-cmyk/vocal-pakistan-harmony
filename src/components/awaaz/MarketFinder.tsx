@@ -16,6 +16,7 @@ import {
   ShoppingBag,
   Scale,
   MapPin,
+  RefreshCw,
 } from "lucide-react";
 import { cities, pkr, type City } from "@/lib/awaaz-data";
 import { buildPriceCard, routingAdvice, type PriceCard } from "@/lib/awaaz-market";
@@ -23,8 +24,11 @@ import { SectionHead, EmptyState, Stat } from "./BillAudit";
 import { DailyCommodityRateBoard } from "./DailyCommodityRateBoard";
 import { BazaarChannelComparison } from "./BazaarChannelComparison";
 import { MarketInflationAdvisor } from "./MarketInflationAdvisor";
+import { AddCustomGroceryModal } from "./AddCustomGroceryModal";
 import { usePersistentState } from "@/lib/use-persistent-state";
+import { useLiveRates } from "@/lib/live-sync";
 import { ShareReportButton } from "@/components/awaaz/ShareReportButton";
+import { type EssentialCommodity, type BasketItem } from "@/lib/awaaz-market-intel";
 
 type ListEntry = { key: string; name: string; qty: number; card: PriceCard };
 
@@ -48,6 +52,45 @@ export function MarketFinder() {
   const [cards, setCards] = useState<PriceCard[]>([]);
   const [list, setList] = useState<ListEntry[]>([]);
   const [reported, setReported] = useState<Record<string, string>>({});
+
+  // Dynamic Custom Items State with Local Persistence
+  const [customCommodities, setCustomCommodities] = usePersistentState<EssentialCommodity[]>(
+    "awaaz_custom_commodities",
+    [],
+  );
+  const [customBasketItems, setCustomBasketItems] = usePersistentState<BasketItem[]>(
+    "awaaz_custom_basket_items",
+    [],
+  );
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  // Live Rates Sync Hook
+  const { isSyncing, lastSyncText, refreshRates } = useLiveRates();
+
+  const handleAddCustomCommodity = (item: EssentialCommodity, initialQty = 1) => {
+    setCustomCommodities((prev) => [item, ...prev.filter((c) => c.id !== item.id)]);
+
+    // Also register in weekly basket items
+    const basketEntry: BasketItem = {
+      id: item.id,
+      commodityId: item.id,
+      name: item.name,
+      urdu: item.urdu,
+      defaultQty: initialQty,
+      unit: item.unit,
+      baseRatePerUnit: {
+        Karachi: item.rates.Karachi.openMarket,
+        Lahore: item.rates.Lahore.openMarket,
+        Islamabad: item.rates.Islamabad.openMarket,
+      },
+    };
+    setCustomBasketItems((prev) => [basketEntry, ...prev.filter((b) => b.id !== item.id)]);
+  };
+
+  const handleRemoveCustomCommodity = (id: string) => {
+    setCustomCommodities((prev) => prev.filter((c) => c.id !== id));
+    setCustomBasketItems((prev) => prev.filter((b) => b.id !== id));
+  };
 
   const search = (raw: string) => {
     const term = raw.trim();
@@ -105,6 +148,44 @@ export function MarketFinder() {
         title="Hyperlocal Grocery & Inflation Intelligence Dashboard"
         subtitle="Track daily DC official vs open market essentials, compare Sunday Bazaars vs Supermarkets, and receive AI inflation surge & seasonal substitution advice."
       />
+
+      {/* Live Sync Status & Custom Item Quick Action Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-950/20 px-4 py-2.5 text-xs text-emerald-300 shadow-sm">
+        <div className="flex items-center gap-2">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+          </span>
+          <span className="font-semibold text-foreground">Live Bazaar & DC Rate Sync:</span>
+          <span className="text-muted-foreground">{lastSyncText}</span>
+          <button
+            type="button"
+            onClick={refreshRates}
+            disabled={isSyncing}
+            className="ml-1 inline-flex items-center gap-1 rounded-md bg-emerald-500/20 px-2 py-0.5 text-[11px] font-bold text-emerald-400 hover:bg-emerald-500/30 transition disabled:opacity-50"
+            title="Force refresh live rates"
+          >
+            <RefreshCw className={`h-3 w-3 ${isSyncing ? "animate-spin" : ""}`} />
+            {isSyncing ? "Syncing..." : "Sync Rates"}
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {customCommodities.length > 0 && (
+            <span className="rounded-full bg-primary/20 px-2 py-0.5 text-[11px] font-semibold text-primary">
+              {customCommodities.length} Custom Item{customCommodities.length > 1 ? "s" : ""} Active
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={() => setIsAddModalOpen(true)}
+            className="btn-primary py-1.5 px-3 text-xs font-bold shadow-xs transition hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <Plus className="h-3.5 w-3.5 mr-1" />
+            Add Custom Item
+          </button>
+        </div>
+      </div>
 
       {/* Main View Navigation Tabs */}
       <div className="flex flex-wrap gap-2 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-2 backdrop-blur-xl shadow-[inset_0_1px_0_0_rgba(255,255,255,0.12),0_8px_30px_rgb(0,0,0,0.4)]">
@@ -167,10 +248,25 @@ export function MarketFinder() {
       </div>
 
       {/* ── Tab View 1: Daily Essential Commodity Rate Board ────── */}
-      {view === "rate_board" && <DailyCommodityRateBoard city={city} onCityChange={setCity} />}
+      {view === "rate_board" && (
+        <DailyCommodityRateBoard
+          city={city}
+          onCityChange={setCity}
+          customItems={customCommodities}
+          onRemoveCustomItem={handleRemoveCustomCommodity}
+          onOpenAddModal={() => setIsAddModalOpen(true)}
+        />
+      )}
 
       {/* ── Tab View 2: Bazaar vs Superstore Price Comparison ─── */}
-      {view === "bazaar_comparison" && <BazaarChannelComparison city={city} />}
+      {view === "bazaar_comparison" && (
+        <BazaarChannelComparison
+          city={city}
+          customBasketItems={customBasketItems}
+          onRemoveCustomItem={handleRemoveCustomCommodity}
+          onOpenAddModal={() => setIsAddModalOpen(true)}
+        />
+      )}
 
       {/* ── Tab View 3: AI Inflation Surge & Seasonal Advisor ──── */}
       {view === "advisor" && <MarketInflationAdvisor city={city} />}
@@ -430,6 +526,14 @@ export function MarketFinder() {
           )}
         </div>
       )}
+
+      {/* Add Custom Grocery Item Modal */}
+      <AddCustomGroceryModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        city={city}
+        onAddItem={handleAddCustomCommodity}
+      />
     </div>
   );
 }

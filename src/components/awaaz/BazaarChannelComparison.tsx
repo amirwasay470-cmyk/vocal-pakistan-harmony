@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ShoppingBag,
   Store,
@@ -13,6 +13,7 @@ import {
   Banknote,
   Star,
   RotateCcw,
+  Trash2,
 } from "lucide-react";
 import { pkr, type City } from "@/lib/awaaz-data";
 import {
@@ -20,13 +21,22 @@ import {
   STANDARD_WEEKLY_BASKET,
   calculateChannelBasket,
   type ChannelId,
+  type BasketItem,
 } from "@/lib/awaaz-market-intel";
 
 type Props = {
   city: City;
+  customBasketItems?: BasketItem[];
+  onRemoveCustomItem?: (id: string) => void;
+  onOpenAddModal?: () => void;
 };
 
-export function BazaarChannelComparison({ city }: Props) {
+export function BazaarChannelComparison({
+  city,
+  customBasketItems = [],
+  onRemoveCustomItem,
+  onOpenAddModal,
+}: Props) {
   // Selected view channel for detailed card
   const [activeChannelId, setActiveChannelId] = useState<ChannelId>("itwar_bazaar");
 
@@ -36,10 +46,30 @@ export function BazaarChannelComparison({ city }: Props) {
     STANDARD_WEEKLY_BASKET.forEach((item) => {
       init[item.id] = item.defaultQty;
     });
+    customBasketItems.forEach((item) => {
+      init[item.id] = item.defaultQty;
+    });
     return init;
   });
 
-  const basketResults = calculateChannelBasket(city, quantities);
+  // Keep quantities updated if new custom items are added
+  useEffect(() => {
+    setQuantities((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      customBasketItems.forEach((item) => {
+        if (next[item.id] === undefined) {
+          next[item.id] = item.defaultQty;
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [customBasketItems]);
+
+  const allBasketItems = [...STANDARD_WEEKLY_BASKET, ...customBasketItems];
+
+  const basketResults = calculateChannelBasket(city, quantities, customBasketItems);
 
   const itwarTotal = basketResults.itwar_bazaar.total;
   const kiranaTotal = basketResults.kirana.total;
@@ -242,9 +272,20 @@ export function BazaarChannelComparison({ city }: Props) {
             </p>
           </div>
 
-          <button type="button" onClick={resetQuantities} className="btn-ghost py-1.5 px-3 text-xs">
-            <RotateCcw className="h-3.5 w-3.5" /> Reset to Standard Basket
-          </button>
+          <div className="flex items-center gap-2">
+            {onOpenAddModal && (
+              <button
+                type="button"
+                onClick={onOpenAddModal}
+                className="btn-primary py-1.5 px-3 text-xs font-bold shadow-xs"
+              >
+                <Plus className="h-3.5 w-3.5 mr-1" /> Add Custom Item
+              </button>
+            )}
+            <button type="button" onClick={resetQuantities} className="btn-ghost py-1.5 px-3 text-xs">
+              <RotateCcw className="h-3.5 w-3.5" /> Reset Basket
+            </button>
+          </div>
         </div>
 
         {/* Itemized Comparison Table */}
@@ -261,18 +302,21 @@ export function BazaarChannelComparison({ city }: Props) {
               </tr>
             </thead>
             <tbody className="divide-y divide-border/40">
-              {STANDARD_WEEKLY_BASKET.map((item) => {
+              {allBasketItems.map((item) => {
                 const qty = quantities[item.id] ?? 0;
-                const baseRate = item.baseRatePerUnit[city];
+                const baseRate = item.baseRatePerUnit[city] ?? 100;
+                const isCustom = item.id.startsWith("custom-");
 
                 const itwarUnit = Math.round(
                   baseRate *
                     (item.id.includes("atta") ||
                     item.id.includes("sugar") ||
                     item.id.includes("daal") ||
-                    item.id.includes("rice")
+                    item.id.includes("rice") ||
+                    item.id.includes("milk") ||
+                    item.id.includes("tea")
                       ? 0.9
-                      : item.id.includes("chicken")
+                      : item.id.includes("chicken") || item.id.includes("meat")
                         ? 0.88
                         : item.id.includes("oil")
                           ? 0.94
@@ -284,9 +328,11 @@ export function BazaarChannelComparison({ city }: Props) {
                     (item.id.includes("atta") ||
                     item.id.includes("sugar") ||
                     item.id.includes("daal") ||
-                    item.id.includes("rice")
+                    item.id.includes("rice") ||
+                    item.id.includes("milk") ||
+                    item.id.includes("tea")
                       ? 0.96
-                      : item.id.includes("chicken")
+                      : item.id.includes("chicken") || item.id.includes("meat")
                         ? 1.08
                         : item.id.includes("oil")
                           ? 0.98
@@ -301,10 +347,31 @@ export function BazaarChannelComparison({ city }: Props) {
                 return (
                   <tr key={item.id} className="hover:bg-surface/50 transition-colors">
                     <td className="py-3 pr-2">
-                      <p className="font-semibold text-foreground">{item.name}</p>
-                      <p className="text-[10px] text-muted-foreground">
-                        {item.urdu} · per {item.unit}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <p className="font-semibold text-foreground">{item.name}</p>
+                            {isCustom && (
+                              <span className="rounded-md bg-primary/15 px-1.5 py-0.5 text-[9px] font-bold text-primary">
+                                Custom
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[10px] text-muted-foreground">
+                            {item.urdu} · per {item.unit}
+                          </p>
+                        </div>
+                        {isCustom && onRemoveCustomItem && (
+                          <button
+                            type="button"
+                            onClick={() => onRemoveCustomItem(item.id)}
+                            className="ml-auto text-muted-foreground hover:text-rose-500 p-1 transition"
+                            title="Remove custom item"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
                     </td>
 
                     <td className="py-3 px-2 text-center">

@@ -32,64 +32,144 @@ export const ESSENTIAL_COMMODITIES: EssentialCommodity[] = [
     variants: [
       { id: "10kg", label: "10 kg bag", unit: "10 kg bag", multiplier: 1 },
       { id: "20kg", label: "20 kg bag", unit: "20 kg bag", multiplier: 1.95 },
+      { id: "chakki", label: "Desi Chakki (10kg)", unit: "10 kg bag", multiplier: 1.18 },
     ],
     rates: {
       Karachi: {
-        dcOfficial: 1180,
-        openMarket: 1390,
-        weeklyChangePct: -1.8,
+        dcOfficial: 1250,
+        openMarket: 1420,
+        weeklyChangePct: -1.2,
         supplyStatus: "stable",
         dcNote: "Government subsidised flour at Utility Stores",
-        marketNote: "Chakki & branded fine flour selling higher in local retail",
+        marketNote: "Chakki & branded fine flour retailing at Rs 140-150/kg",
       },
       Lahore: {
-        dcOfficial: 1140,
-        openMarket: 1350,
-        weeklyChangePct: -2.4,
+        dcOfficial: 1180,
+        openMarket: 1360,
+        weeklyChangePct: -2.0,
         supplyStatus: "stable",
         dcNote: "Punjab Food Dept subsidised green bags",
-        marketNote: "Open market mills flour steady following provincial release",
+        marketNote: "Open market roller mills flour steady following wheat releases",
       },
       Islamabad: {
-        dcOfficial: 1200,
-        openMarket: 1420,
+        dcOfficial: 1220,
+        openMarket: 1440,
         weeklyChangePct: 0.5,
         supplyStatus: "stable",
-        dcNote: "ICT Administration fair price shops",
+        dcNote: "ICT Administration fair price kiosks",
         marketNote: "Sector Kiryana stores charging retail packaging markup",
       },
     },
   },
   {
     id: "sugar",
-    name: "Sugar (Cheeni)",
-    urdu: "چینی (ریفائنڈ)",
+    name: "Sugar (Refined Cheeni)",
+    urdu: "چینی (ریفائنڈ سفید)",
     category: "staple",
     unit: "1 kg",
+    variants: [
+      { id: "loose", label: "Loose (Khuli)", unit: "1 kg", multiplier: 1 },
+      { id: "branded", label: "Branded Pack (1kg)", unit: "1 kg pack", multiplier: 1.08 },
+      { id: "shakar", label: "Desi Shakar / Gurr", unit: "1 kg", multiplier: 1.15 },
+    ],
     rates: {
       Karachi: {
-        dcOfficial: 140,
-        openMarket: 165,
-        weeklyChangePct: 2.1,
+        dcOfficial: 145,
+        openMarket: 168,
+        weeklyChangePct: 1.5,
         supplyStatus: "moderating",
         dcNote: "Utility Stores Corporation ration quota",
         marketNote: "Jodia Bazaar wholesale steady, retail adds Rs 15-20 margin",
       },
       Lahore: {
-        dcOfficial: 138,
-        openMarket: 160,
-        weeklyChangePct: 1.2,
+        dcOfficial: 140,
+        openMarket: 162,
+        weeklyChangePct: 0.8,
         supplyStatus: "moderating",
         dcNote: "District administration controlled rate",
-        marketNote: "Akbari Mandi wholesale Rs 146/kg, retail loose Rs 160",
+        marketNote: "Akbari Mandi wholesale Rs 148/kg, retail loose Rs 162",
       },
       Islamabad: {
-        dcOfficial: 142,
-        openMarket: 168,
-        weeklyChangePct: 1.8,
+        dcOfficial: 144,
+        openMarket: 170,
+        weeklyChangePct: 1.2,
         supplyStatus: "moderating",
         dcNote: "Utility store price cap",
-        marketNote: "Local grocers stocking branded 1kg packets at Rs 175",
+        marketNote: "Local grocers stocking branded 1kg packets at Rs 175-180",
+      },
+    },
+  },
+  {
+    id: "daal-masoor",
+    name: "Daal Masoor (Red Lentils)",
+    urdu: "دال مسور (دھلی ہوئی)",
+    category: "staple",
+    unit: "1 kg",
+    variants: [
+      { id: "loose", label: "Wholesale Loose", unit: "1 kg", multiplier: 1 },
+      { id: "premium", label: "Packaged Cleaned", unit: "1 kg pack", multiplier: 1.12 },
+    ],
+    rates: {
+      Karachi: {
+        dcOfficial: 290,
+        openMarket: 345,
+        weeklyChangePct: 1.8,
+        supplyStatus: "stable",
+        dcNote: "Mandi notified import rate list",
+        marketNote: "Imported Australian grain retail margin at Jodia Bazaar",
+      },
+      Lahore: {
+        dcOfficial: 280,
+        openMarket: 338,
+        weeklyChangePct: 0.5,
+        supplyStatus: "stable",
+        dcNote: "Akbari Mandi commodity board benchmark",
+        marketNote: "Retail kiryana loose grain selling Rs 330 - 345/kg",
+      },
+      Islamabad: {
+        dcOfficial: 295,
+        openMarket: 350,
+        weeklyChangePct: 1.2,
+        supplyStatus: "stable",
+        dcNote: "ICT Food Directorate rate list",
+        marketNote: "Clean sorted red lentils in capital superstores at Rs 365",
+      },
+    },
+  },
+  {
+    id: "daal-chana",
+    name: "Daal Chana (Gram Pulse)",
+    urdu: "دال چنا (اسپیشل)",
+    category: "staple",
+    unit: "1 kg",
+    variants: [
+      { id: "gradeA", label: "Grade A Special", unit: "1 kg", multiplier: 1 },
+      { id: "loose", label: "Medium Regular", unit: "1 kg", multiplier: 0.92 },
+    ],
+    rates: {
+      Karachi: {
+        dcOfficial: 265,
+        openMarket: 310,
+        weeklyChangePct: -1.0,
+        supplyStatus: "stable",
+        dcNote: "Commissioner office circular",
+        marketNote: "Domestic Thal crop arrivals stabilizing retail grain markets",
+      },
+      Lahore: {
+        dcOfficial: 255,
+        openMarket: 298,
+        weeklyChangePct: -1.5,
+        supplyStatus: "stable",
+        dcNote: "Model bazaar guideline price",
+        marketNote: "Wholesale grain market selling bulk bags at Rs 275/kg",
+      },
+      Islamabad: {
+        dcOfficial: 270,
+        openMarket: 315,
+        weeklyChangePct: 0.0,
+        supplyStatus: "stable",
+        dcNote: "Fair price stall notified ceiling",
+        marketNote: "Local grocers stocking cleaned unpolished dal at Rs 315",
       },
     },
   },
@@ -101,65 +181,220 @@ export const ESSENTIAL_COMMODITIES: EssentialCommodity[] = [
     unit: "1 kg meat",
     variants: [
       { id: "meat", label: "Clean Meat (Gosht)", unit: "1 kg meat", multiplier: 1 },
-      { id: "live", label: "Live Bird (Zinda)", unit: "1 kg live", multiplier: 0.65 },
+      { id: "live", label: "Live Bird (Zinda)", unit: "1 kg live", multiplier: 0.68 },
     ],
     rates: {
       Karachi: {
-        dcOfficial: 535,
-        openMarket: 610,
-        weeklyChangePct: 4.8,
+        dcOfficial: 560,
+        openMarket: 640,
+        weeklyChangePct: 5.2,
         supplyStatus: "surge",
-        dcNote: "Karachi Commissionerate daily chicken circular",
-        marketNote: "Feed cost and poultry farm supply crunch in interior Sindh",
+        dcNote: "Karachi Commissionerate daily poultry rate list",
+        marketNote: "Feed costs and interior Sindh farm transport push retail to Rs 650",
       },
       Lahore: {
-        dcOfficial: 495,
-        openMarket: 565,
-        weeklyChangePct: 3.5,
-        supplyStatus: "surge",
-        dcNote: "Lahore DC daily meat bulletin",
-        marketNote: "Tollinton market wholesale up due to broiler mortality",
-      },
-      Islamabad: {
         dcOfficial: 520,
         openMarket: 595,
-        weeklyChangePct: 5.1,
+        weeklyChangePct: 3.8,
+        supplyStatus: "surge",
+        dcNote: "Lahore DC daily meat bulletin",
+        marketNote: "Tollinton mandi live bird Rs 395/kg, meat cut Rs 595",
+      },
+      Islamabad: {
+        dcOfficial: 545,
+        openMarket: 625,
+        weeklyChangePct: 4.6,
         supplyStatus: "surge",
         dcNote: "ICT Food Directorate rate list",
-        marketNote: "Rawalpindi wholesale mandi rate fluctuations impacting capital",
+        marketNote: "Rawalpindi poultry hub price ripple impact in capital sectors",
       },
     },
   },
   {
     id: "oil",
-    name: "Cooking Oil / Ghee",
-    urdu: "کوکنگ آئل / بناسپتی گھی",
+    name: "Cooking Oil (Dalda / Habib / Soya)",
+    urdu: "کوکنگ آئل (برانڈڈ)",
     category: "oil",
-    unit: "1 Litre / kg pouch",
+    unit: "1 Litre pouch",
+    variants: [
+      { id: "pouch1L", label: "1L Pouch (Tier 1)", unit: "1 Litre pouch", multiplier: 1 },
+      { id: "carton5L", label: "5L Can / Tin", unit: "5 Litre can", multiplier: 4.85 },
+      { id: "banaspati", label: "Banaspati Ghee (1kg)", unit: "1 kg pouch", multiplier: 0.94 },
+    ],
     rates: {
       Karachi: {
-        dcOfficial: 485,
-        openMarket: 555,
-        weeklyChangePct: -0.8,
+        dcOfficial: 495,
+        openMarket: 565,
+        weeklyChangePct: -0.5,
         supplyStatus: "stable",
         dcNote: "Subsidized utility brand palm olein blend",
-        marketNote: "Tier-1 national brands retailing between Rs 550 - 580",
+        marketNote: "Premium Canola/Sunflower brands (Dalda, Seasons) retailing at Rs 570 - 610",
       },
       Lahore: {
-        dcOfficial: 475,
-        openMarket: 545,
-        weeklyChangePct: -1.2,
+        dcOfficial: 485,
+        openMarket: 550,
+        weeklyChangePct: -1.0,
         supplyStatus: "stable",
         dcNote: "Subsidized kiosk quota price",
-        marketNote: "Loose tin refill at wholesale mandi at Rs 515/kg",
+        marketNote: "Loose tin refill at wholesale mandi at Rs 520/kg",
       },
       Islamabad: {
-        dcOfficial: 490,
-        openMarket: 565,
+        dcOfficial: 500,
+        openMarket: 575,
         weeklyChangePct: 0.0,
         supplyStatus: "stable",
         dcNote: "USC subsidized 1L pouch",
-        marketNote: "Branded canola/sunflower blends commanding Rs 620+",
+        marketNote: "Branded canola/sunflower blends commanding Rs 580 - 620",
+      },
+    },
+  },
+  {
+    id: "milk-khoya",
+    name: "Fresh Milk & Khoya",
+    urdu: "تازہ دودھ / کھویا",
+    category: "staple",
+    unit: "1 litre",
+    variants: [
+      { id: "fresh", label: "Fresh Gawala Milk (1L)", unit: "1 litre", multiplier: 1 },
+      { id: "uht", label: "UHT Tetra Pack (1L)", unit: "1 litre pack", multiplier: 1.14 },
+      { id: "khoya", label: "Desi Khoya (1kg)", unit: "1 kg", multiplier: 4.2 },
+    ],
+    rates: {
+      Karachi: {
+        dcOfficial: 200,
+        openMarket: 240,
+        weeklyChangePct: 1.2,
+        supplyStatus: "stable",
+        dcNote: "Karachi Commissioner official notified buffalo milk rate",
+        marketNote: "Dairy shops charging Rs 230-250 for full-cream buffalo milk",
+      },
+      Lahore: {
+        dcOfficial: 185,
+        openMarket: 220,
+        weeklyChangePct: 0.5,
+        supplyStatus: "stable",
+        dcNote: "Punjab Price Control notified ceiling",
+        marketNote: "Local gawala milk Rs 210-220/L, packed milk Rs 250",
+      },
+      Islamabad: {
+        dcOfficial: 195,
+        openMarket: 235,
+        weeklyChangePct: 1.0,
+        supplyStatus: "stable",
+        dcNote: "ICT Food authority benchmark",
+        marketNote: "Rawalpindi/Islamabad dairy farms retail at Rs 230-245/L",
+      },
+    },
+  },
+  {
+    id: "black-tea",
+    name: "Black Tea (Danedar / Dust)",
+    urdu: "کالی چائے (دانے دار)",
+    category: "staple",
+    unit: "900g family pack",
+    variants: [
+      { id: "pack900g", label: "900g Family Pack", unit: "900g pack", multiplier: 1 },
+      { id: "pack450g", label: "450g Medium Pack", unit: "450g pack", multiplier: 0.53 },
+      { id: "loose", label: "Loose Kenyan Dust (1kg)", unit: "1 kg loose", multiplier: 0.95 },
+    ],
+    rates: {
+      Karachi: {
+        dcOfficial: 1450,
+        openMarket: 1680,
+        weeklyChangePct: 0.8,
+        supplyStatus: "stable",
+        dcNote: "Utility Store subsidized Tapal / Lipton blend",
+        marketNote: "Retail 900g Danedar pack selling at Rs 1,650 - 1,720",
+      },
+      Lahore: {
+        dcOfficial: 1420,
+        openMarket: 1650,
+        weeklyChangePct: 0.5,
+        supplyStatus: "stable",
+        dcNote: "Government guideline for consumer tea",
+        marketNote: "Akbari Mandi wholesale tea traders selling branded at Rs 1,620",
+      },
+      Islamabad: {
+        dcOfficial: 1460,
+        openMarket: 1700,
+        weeklyChangePct: 1.0,
+        supplyStatus: "stable",
+        dcNote: "Federal capital USC price list",
+        marketNote: "Supermarkets and local sectors retail at printed MRP Rs 1,720",
+      },
+    },
+  },
+  {
+    id: "red-chili",
+    name: "Red Chili Powder (Lal Mirch)",
+    urdu: "سرخ مرچ پاؤڈر (پسی ہوئی)",
+    category: "staple",
+    unit: "1 kg",
+    variants: [
+      { id: "loose", label: "Desi Mandi Loose (1kg)", unit: "1 kg", multiplier: 1 },
+      { id: "branded", label: "Branded Sealed Pouch (800g)", unit: "800g pack", multiplier: 1.18 },
+    ],
+    rates: {
+      Karachi: {
+        dcOfficial: 650,
+        openMarket: 820,
+        weeklyChangePct: 2.5,
+        supplyStatus: "moderating",
+        dcNote: "Sindh Kunri Mandi crop auction guideline",
+        marketNote: "Jodia Bazaar pure ground chili Rs 780-820/kg",
+      },
+      Lahore: {
+        dcOfficial: 620,
+        openMarket: 790,
+        weeklyChangePct: 1.8,
+        supplyStatus: "moderating",
+        dcNote: "Lahore DC spice control circular",
+        marketNote: "Akbari Mandi authentic grind Rs 760-800",
+      },
+      Islamabad: {
+        dcOfficial: 660,
+        openMarket: 840,
+        weeklyChangePct: 2.0,
+        supplyStatus: "moderating",
+        dcNote: "ICT Food safety checked rate",
+        marketNote: "Branded box spices retail higher with packaging margins",
+      },
+    },
+  },
+  {
+    id: "salt",
+    name: "Iodized Salt (Namak)",
+    urdu: "آیوڈین ملا نمک",
+    category: "staple",
+    unit: "800g pack",
+    variants: [
+      { id: "iodized", label: "Refined Iodized (800g)", unit: "800g pack", multiplier: 1 },
+      { id: "pink", label: "Khewra Pink Salt (1kg)", unit: "1 kg", multiplier: 1.6 },
+    ],
+    rates: {
+      Karachi: {
+        dcOfficial: 50,
+        openMarket: 65,
+        weeklyChangePct: 0.0,
+        supplyStatus: "stable",
+        dcNote: "National salt subsidy circular",
+        marketNote: "Branded National / Shan 800g packs steady at Rs 60-70",
+      },
+      Lahore: {
+        dcOfficial: 48,
+        openMarket: 60,
+        weeklyChangePct: 0.0,
+        supplyStatus: "stable",
+        dcNote: "Punjab Price Control list",
+        marketNote: "Proximity to Khewra mines maintains lowest supply cost",
+      },
+      Islamabad: {
+        dcOfficial: 52,
+        openMarket: 68,
+        weeklyChangePct: 0.0,
+        supplyStatus: "stable",
+        dcNote: "ICT price bulletin",
+        marketNote: "Consistent availability across all grocery channels",
       },
     },
   },
@@ -169,30 +404,34 @@ export const ESSENTIAL_COMMODITIES: EssentialCommodity[] = [
     urdu: "پیاز (درمیانی)",
     category: "vegetable",
     unit: "1 kg",
+    variants: [
+      { id: "regular", label: "Fresh Regular Grade", unit: "1 kg", multiplier: 1 },
+      { id: "bulk5kg", label: "5kg Wholesale Mesh", unit: "5 kg bag", multiplier: 4.4 },
+    ],
     rates: {
       Karachi: {
-        dcOfficial: 75,
-        openMarket: 98,
-        weeklyChangePct: -5.4,
+        dcOfficial: 80,
+        openMarket: 105,
+        weeklyChangePct: -4.5,
         supplyStatus: "moderating",
         dcNote: "Sabzi Mandi DC notified first grade",
-        marketNote: "Fresh Sindh crop arrivals easing market pressure",
+        marketNote: "Fresh Sindh crop arrivals easing wholesale market pressure",
       },
       Lahore: {
-        dcOfficial: 70,
-        openMarket: 90,
-        weeklyChangePct: -6.2,
+        dcOfficial: 75,
+        openMarket: 98,
+        weeklyChangePct: -5.2,
         supplyStatus: "moderating",
         dcNote: "Badami Bagh auction guideline rate",
-        marketNote: "Local supply inflow stabilizing retail carts",
+        marketNote: "Local supply inflow stabilizing retail street carts",
       },
       Islamabad: {
-        dcOfficial: 78,
-        openMarket: 105,
-        weeklyChangePct: -3.8,
+        dcOfficial: 82,
+        openMarket: 110,
+        weeklyChangePct: -3.0,
         supplyStatus: "moderating",
         dcNote: "I-11 Mandi official market committee rate",
-        marketNote: "Sector carts adding transit & sorting premium",
+        marketNote: "Sector carts adding transit & grading premium",
       },
     },
   },
@@ -202,30 +441,34 @@ export const ESSENTIAL_COMMODITIES: EssentialCommodity[] = [
     urdu: "آلو (نیا / سفید)",
     category: "vegetable",
     unit: "1 kg",
+    variants: [
+      { id: "medium", label: "Grade A Medium", unit: "1 kg", multiplier: 1 },
+      { id: "bulk5kg", label: "5kg Mandi Bag", unit: "5 kg bag", multiplier: 4.3 },
+    ],
     rates: {
       Karachi: {
-        dcOfficial: 62,
-        openMarket: 82,
-        weeklyChangePct: 1.5,
+        dcOfficial: 65,
+        openMarket: 85,
+        weeklyChangePct: 1.2,
         supplyStatus: "stable",
         dcNote: "Official notified auction ceiling",
         marketNote: "Cold storage supplies meeting metropolitan demand",
       },
       Lahore: {
-        dcOfficial: 55,
-        openMarket: 72,
-        weeklyChangePct: 0.8,
+        dcOfficial: 58,
+        openMarket: 75,
+        weeklyChangePct: 0.5,
         supplyStatus: "stable",
         dcNote: "Punjab market committee rate",
         marketNote: "Punjab potato belt close proximity keeps rates lowest",
       },
       Islamabad: {
-        dcOfficial: 65,
-        openMarket: 85,
-        weeklyChangePct: 2.2,
+        dcOfficial: 68,
+        openMarket: 88,
+        weeklyChangePct: 1.8,
         supplyStatus: "stable",
         dcNote: "ICT agriculture rate circular",
-        marketNote: "Clean washed grade A potatoes at retail Rs 85-90",
+        marketNote: "Clean washed grade A potatoes at retail Rs 85-92",
       },
     },
   },
@@ -235,30 +478,34 @@ export const ESSENTIAL_COMMODITIES: EssentialCommodity[] = [
     urdu: "ٹماٹر (تازہ فارمی)",
     category: "vegetable",
     unit: "1 kg",
+    variants: [
+      { id: "regular", label: "Ripe Table Grade", unit: "1 kg", multiplier: 1 },
+      { id: "crate", label: "Wholesale Crate (~14kg)", unit: "14 kg crate", multiplier: 10.5 },
+    ],
     rates: {
       Karachi: {
-        dcOfficial: 95,
-        openMarket: 145,
-        weeklyChangePct: 18.5,
+        dcOfficial: 105,
+        openMarket: 155,
+        weeklyChangePct: 16.5,
         supplyStatus: "surge",
         dcNote: "Auction benchmark (short supply)",
-        marketNote: "Monsoon highway disruptions pinching Balochistan crate arrivals",
+        marketNote: "Balochistan transit rains pinch arrivals; street thelas reach Rs 160",
       },
       Lahore: {
-        dcOfficial: 90,
-        openMarket: 138,
-        weeklyChangePct: 16.2,
+        dcOfficial: 98,
+        openMarket: 148,
+        weeklyChangePct: 14.8,
         supplyStatus: "surge",
         dcNote: "Market committee control rate",
-        marketNote: "High transit spoilage pushing street thela rates up to Rs 150",
+        marketNote: "High transit spoilage pushing street thela rates up to Rs 150-155",
       },
       Islamabad: {
-        dcOfficial: 98,
-        openMarket: 155,
-        weeklyChangePct: 21.0,
+        dcOfficial: 108,
+        openMarket: 165,
+        weeklyChangePct: 18.0,
         supplyStatus: "surge",
         dcNote: "Official mandi list ceiling",
-        marketNote: "Severe supply tightness; Itwar Bazaar cheapest outlet",
+        marketNote: "Severe supply tightness; Itwar Bazaar cheapest outlet at Rs 115",
       },
     },
   },
@@ -353,7 +600,7 @@ export const STANDARD_WEEKLY_BASKET: BasketItem[] = [
     urdu: "گندم کا آٹا",
     defaultQty: 1, // 1 bag of 10kg
     unit: "10kg bag",
-    baseRatePerUnit: { Karachi: 1390, Lahore: 1350, Islamabad: 1420 },
+    baseRatePerUnit: { Karachi: 1420, Lahore: 1360, Islamabad: 1440 },
   },
   {
     id: "b-sugar",
@@ -362,7 +609,7 @@ export const STANDARD_WEEKLY_BASKET: BasketItem[] = [
     urdu: "چینی",
     defaultQty: 2,
     unit: "kg",
-    baseRatePerUnit: { Karachi: 165, Lahore: 160, Islamabad: 168 },
+    baseRatePerUnit: { Karachi: 168, Lahore: 162, Islamabad: 170 },
   },
   {
     id: "b-chicken",
@@ -371,7 +618,7 @@ export const STANDARD_WEEKLY_BASKET: BasketItem[] = [
     urdu: "مرغی گوشت",
     defaultQty: 2,
     unit: "kg",
-    baseRatePerUnit: { Karachi: 610, Lahore: 565, Islamabad: 595 },
+    baseRatePerUnit: { Karachi: 640, Lahore: 595, Islamabad: 625 },
   },
   {
     id: "b-oil",
@@ -380,7 +627,7 @@ export const STANDARD_WEEKLY_BASKET: BasketItem[] = [
     urdu: "کوکنگ آئل",
     defaultQty: 2,
     unit: "litre",
-    baseRatePerUnit: { Karachi: 555, Lahore: 545, Islamabad: 565 },
+    baseRatePerUnit: { Karachi: 565, Lahore: 550, Islamabad: 575 },
   },
   {
     id: "b-onion",
@@ -389,7 +636,7 @@ export const STANDARD_WEEKLY_BASKET: BasketItem[] = [
     urdu: "پیاز",
     defaultQty: 3,
     unit: "kg",
-    baseRatePerUnit: { Karachi: 98, Lahore: 90, Islamabad: 105 },
+    baseRatePerUnit: { Karachi: 105, Lahore: 98, Islamabad: 110 },
   },
   {
     id: "b-potato",
@@ -398,7 +645,7 @@ export const STANDARD_WEEKLY_BASKET: BasketItem[] = [
     urdu: "آلو",
     defaultQty: 3,
     unit: "kg",
-    baseRatePerUnit: { Karachi: 82, Lahore: 72, Islamabad: 85 },
+    baseRatePerUnit: { Karachi: 85, Lahore: 75, Islamabad: 88 },
   },
   {
     id: "b-tomato",
@@ -407,7 +654,7 @@ export const STANDARD_WEEKLY_BASKET: BasketItem[] = [
     urdu: "ٹماٹر",
     defaultQty: 2,
     unit: "kg",
-    baseRatePerUnit: { Karachi: 145, Lahore: 138, Islamabad: 155 },
+    baseRatePerUnit: { Karachi: 155, Lahore: 148, Islamabad: 165 },
   },
   {
     id: "b-daal",
@@ -416,7 +663,25 @@ export const STANDARD_WEEKLY_BASKET: BasketItem[] = [
     urdu: "دال چنا",
     defaultQty: 1,
     unit: "kg",
-    baseRatePerUnit: { Karachi: 330, Lahore: 315, Islamabad: 340 },
+    baseRatePerUnit: { Karachi: 310, Lahore: 298, Islamabad: 315 },
+  },
+  {
+    id: "b-daal-masoor",
+    commodityId: "daal-masoor",
+    name: "Daal Masoor (Red Lentils)",
+    urdu: "دال مسور",
+    defaultQty: 1,
+    unit: "kg",
+    baseRatePerUnit: { Karachi: 345, Lahore: 338, Islamabad: 350 },
+  },
+  {
+    id: "b-milk",
+    commodityId: "milk-khoya",
+    name: "Fresh Milk (Gawala / Farm)",
+    urdu: "تازہ دودھ",
+    defaultQty: 7,
+    unit: "litre",
+    baseRatePerUnit: { Karachi: 240, Lahore: 220, Islamabad: 235 },
   },
   {
     id: "b-rice",
@@ -425,7 +690,7 @@ export const STANDARD_WEEKLY_BASKET: BasketItem[] = [
     urdu: "باسمتی چاول",
     defaultQty: 2,
     unit: "kg",
-    baseRatePerUnit: { Karachi: 290, Lahore: 275, Islamabad: 300 },
+    baseRatePerUnit: { Karachi: 320, Lahore: 295, Islamabad: 330 },
   },
 ];
 
@@ -454,6 +719,7 @@ export const CHANNEL_CATEGORY_MULTIPLIERS: Record<ChannelId, Record<string, numb
 export function calculateChannelBasket(
   city: City,
   quantities: Record<string, number>,
+  customBasketItems: BasketItem[] = [],
 ): Record<
   ChannelId,
   {
@@ -473,25 +739,30 @@ export function calculateChannelBasket(
     superstore: { total: 0, breakdown: [] },
   };
 
-  STANDARD_WEEKLY_BASKET.forEach((item) => {
+  const allItems = [...STANDARD_WEEKLY_BASKET, ...customBasketItems];
+
+  allItems.forEach((item) => {
     const qty = quantities[item.id] ?? item.defaultQty;
     if (qty <= 0) return;
 
-    const baseRate = item.baseRatePerUnit[city];
+    const baseRate = item.baseRatePerUnit[city] ?? 100;
     const category =
       item.id.includes("atta") ||
       item.id.includes("sugar") ||
       item.id.includes("daal") ||
-      item.id.includes("rice")
+      item.id.includes("rice") ||
+      item.id.includes("milk") ||
+      item.id.includes("tea") ||
+      item.id.includes("salt")
         ? "staple"
-        : item.id.includes("chicken")
+        : item.id.includes("chicken") || item.id.includes("meat")
           ? "poultry"
-          : item.id.includes("oil")
+          : item.id.includes("oil") || item.id.includes("ghee")
             ? "oil"
             : "vegetable";
 
     (["itwar_bazaar", "kirana", "superstore"] as ChannelId[]).forEach((ch) => {
-      const mult = CHANNEL_CATEGORY_MULTIPLIERS[ch][category] ?? 1;
+      const mult = CHANNEL_CATEGORY_MULTIPLIERS[ch][category] ?? 1.0;
       const unitPrice = Math.round(baseRate * mult);
       const lineTotal = unitPrice * qty;
 

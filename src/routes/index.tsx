@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   Zap,
@@ -63,6 +63,10 @@ function Index() {
   const [tab, setTab] = useState<TabId>("bills");
   const [advisorCtx, setAdvisorCtx] = useState<AdvisorContext | null>(null);
   const [eyeglassMode, setEyeglassMode] = usePersistentState<boolean>("awaaz_eyeglass_mode", false);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [tab]);
 
   const liveUnits = advisorCtx?.billedUnits ?? 412;
   const liveDiscoId = advisorCtx?.disco.id ?? "k-electric";
@@ -141,6 +145,7 @@ function Index() {
                   <button
                     type="button"
                     key={t.id}
+                    type="button"
                     onClick={() => setTab(t.id)}
                     aria-current={active ? "page" : undefined}
                     className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all sm:text-sm lg:flex-1 lg:justify-center ${

@@ -22,31 +22,30 @@ type EnergyAdvisorProps = {
 };
 
 export function EnergyAdvisor({ context }: EnergyAdvisorProps) {
-  const [messages, setMessages] = useState<ChatMsg[]>([]);
+  const [messages, setMessages] = useState<ChatMsg[]>([
+    {
+      id: "greeting",
+      role: "assistant",
+      content: INITIAL_GREETING,
+    },
+  ]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const didInitRef = useRef(false);
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
-    setMessages([
-      {
-        id: "greeting",
-        role: "assistant",
-        content: INITIAL_GREETING,
-      },
-    ]);
-  }, []);
-
-  useEffect(() => {
-    // Skip the initial greeting render so the page does not jump down on load.
-    if (!didInitRef.current) {
-      didInitRef.current = true;
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
       return;
     }
-    const container = containerRef.current;
-    if (!container) return;
-    container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+    // Only scroll the internal chat container, never the window
+    if (containerRef.current) {
+      containerRef.current.scrollTo({
+        top: containerRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }
   }, [messages, isTyping]);
 
   const effectiveContext = context ?? createDefaultAdvisorContext();

@@ -15,6 +15,8 @@ import {
   Store,
   Info,
   Scale,
+  Plus,
+  Trash2,
 } from "lucide-react";
 import { pkr, type City } from "@/lib/awaaz-data";
 import { ESSENTIAL_COMMODITIES, type EssentialCommodity } from "@/lib/awaaz-market-intel";
@@ -24,9 +26,18 @@ import { ShareReportButton } from "@/components/awaaz/ShareReportButton";
 type Props = {
   city: City;
   onCityChange: (c: City) => void;
+  customItems?: EssentialCommodity[];
+  onRemoveCustomItem?: (id: string) => void;
+  onOpenAddModal?: () => void;
 };
 
-export function DailyCommodityRateBoard({ city, onCityChange }: Props) {
+export function DailyCommodityRateBoard({
+  city,
+  onCityChange,
+  customItems = [],
+  onRemoveCustomItem,
+  onOpenAddModal,
+}: Props) {
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({
     atta: "10kg",
@@ -37,7 +48,9 @@ export function DailyCommodityRateBoard({ city, onCityChange }: Props) {
     "kg",
   );
 
-  const filtered = ESSENTIAL_COMMODITIES.filter((item) => {
+  const allItems = [...ESSENTIAL_COMMODITIES, ...customItems];
+
+  const filtered = allItems.filter((item) => {
     if (categoryFilter === "all") return true;
     return item.category === categoryFilter;
   });
@@ -117,8 +130,17 @@ export function DailyCommodityRateBoard({ city, onCityChange }: Props) {
           </div>
         </div>
 
-        {/* Share Daily Bazaar Rate Sheet */}
+        {/* Share Daily Bazaar Rate Sheet & Add Custom Item */}
         <div className="flex items-center gap-2">
+          {onOpenAddModal && (
+            <button
+              type="button"
+              onClick={onOpenAddModal}
+              className="btn-primary py-1.5 px-3 text-xs font-bold shadow-xs"
+            >
+              <Plus className="h-3.5 w-3.5 mr-1" /> Add Custom Item
+            </button>
+          )}
           <ShareReportButton
             title={`Daily Bazaar Price Basket (${city})`}
             urduTitle="روزانہ سرکاری ریٹ لسٹ و مارکیٹ بھاؤ"
@@ -209,9 +231,16 @@ export function DailyCommodityRateBoard({ city, onCityChange }: Props) {
                     {getCategoryIcon(item.category)}
                   </span>
                   <div>
-                    <h4 className="text-sm font-bold tracking-tight text-foreground">
-                      {item.name}
-                    </h4>
+                    <div className="flex items-center gap-1.5">
+                      <h4 className="text-sm font-bold tracking-tight text-foreground">
+                        {item.name}
+                      </h4>
+                      {item.id.startsWith("custom-") && (
+                        <span className="rounded-md bg-primary/15 px-1.5 py-0.5 text-[9px] font-bold text-primary">
+                          Custom
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-muted-foreground">
                       {item.urdu} ·{" "}
                       <span className="font-medium text-foreground/80">{displayUnit}</span>
@@ -219,20 +248,33 @@ export function DailyCommodityRateBoard({ city, onCityChange }: Props) {
                   </div>
                 </div>
 
-                {/* Status indicator */}
-                {isSurge ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[var(--warning)]/15 px-2.5 py-0.5 text-[11px] font-bold text-[var(--warning)]">
-                    <Flame className="h-3 w-3" /> Surge
-                  </span>
-                ) : isModerating ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-                    <TrendingDown className="h-3 w-3" /> Easing
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold text-primary">
-                    <CheckCircle2 className="h-3 w-3" /> Stable
-                  </span>
-                )}
+                {/* Status indicator or Delete button for custom */}
+                <div className="flex items-center gap-1.5">
+                  {item.id.startsWith("custom-") && onRemoveCustomItem && (
+                    <button
+                      type="button"
+                      onClick={() => onRemoveCustomItem(item.id)}
+                      className="rounded-lg p-1 text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition"
+                      title="Remove custom item"
+                      aria-label={`Remove custom item ${item.name}`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
+                  {isSurge ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[var(--warning)]/15 px-2.5 py-0.5 text-[11px] font-bold text-[var(--warning)]">
+                      <Flame className="h-3 w-3" /> Surge
+                    </span>
+                  ) : isModerating ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                      <TrendingDown className="h-3 w-3" /> Easing
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold text-primary">
+                      <CheckCircle2 className="h-3 w-3" /> Stable
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Variant Toggles (e.g. 10kg vs 20kg, Meat vs Live) */}
