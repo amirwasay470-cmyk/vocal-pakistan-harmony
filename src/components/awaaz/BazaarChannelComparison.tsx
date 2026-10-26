@@ -282,7 +282,11 @@ export function BazaarChannelComparison({
                 <Plus className="h-3.5 w-3.5 mr-1" /> Add Custom Item
               </button>
             )}
-            <button type="button" onClick={resetQuantities} className="btn-ghost py-1.5 px-3 text-xs">
+            <button
+              type="button"
+              onClick={resetQuantities}
+              className="btn-ghost py-1.5 px-3 text-xs"
+            >
               <RotateCcw className="h-3.5 w-3.5" /> Reset Basket
             </button>
           </div>

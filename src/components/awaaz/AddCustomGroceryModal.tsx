@@ -195,7 +195,9 @@ export function AddCustomGroceryModal({ isOpen, onClose, city, onAddItem }: Prop
               <label className="block text-[11px] font-bold text-foreground mb-1">Category *</label>
               <select
                 value={category}
-                onChange={(e) => setCategory(e.target.value as any)}
+                onChange={(e) =>
+                  setCategory(e.target.value as "staple" | "vegetable" | "poultry" | "oil")
+                }
                 className="input-base w-full min-h-10 text-xs"
               >
                 {CATEGORY_OPTIONS.map((c) => (

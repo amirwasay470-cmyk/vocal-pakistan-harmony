@@ -53,7 +53,7 @@ const tabs = [
   { id: "optimizer", label: "Solar & Energy Optimizer", short: "Optimizer", icon: Sun },
   { id: "commute", label: "Commute & Fuel", short: "Commute", icon: RouteIcon },
   { id: "cooking", label: "Cooking Energy Management", short: "Cooking Gas", icon: Flame },
-  { id: "recipes", label: "Leftover Recipes", short: "Recipes", icon: ChefHat },
+  { id: "recipes", label: "Jugaad Kitchen & Recipe Hub", short: "Kitchen Hub", icon: ChefHat },
   { id: "market", label: "Market Value", short: "Market", icon: ShoppingBasket },
 ] as const;
 
@@ -150,11 +150,15 @@ function Index() {
                     aria-current={active ? "page" : undefined}
                     className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all sm:text-sm lg:flex-1 lg:justify-center ${
                       active
-                        ? "border border-emerald-500/50 bg-emerald-500/20 text-emerald-300 shadow-sm"
+                        ? t.id === "recipes"
+                          ? "border border-[#d45d33]/60 bg-[#d45d33]/20 text-[#ffaa88] shadow-[0_0_15px_rgba(212,93,51,0.25)]"
+                          : "border border-emerald-500/50 bg-emerald-500/20 text-emerald-300 shadow-sm"
                         : "border border-transparent text-slate-400 hover:border-white/[0.08] hover:bg-slate-900/60 hover:text-white"
                     }`}
                   >
-                    <Icon className={`h-4 w-4 shrink-0 ${active ? "text-emerald-400" : ""}`} />
+                    <Icon
+                      className={`h-4 w-4 shrink-0 ${active ? (t.id === "recipes" ? "text-[#ffaa88]" : "text-emerald-400") : ""}`}
+                    />
                     {t.label}
                   </button>
                 );

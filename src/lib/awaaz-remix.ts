@@ -1,8 +1,10 @@
-/** "Jugaad Kitchen" — visual pantry grid + Desi Remix transformation engine. */
+/** "Jugaad Kitchen" — visual pantry grid + Desi Remix transformation engine.
+ * STRICT ZERO-EXTRA-GROCERY: Every transformation uses ONLY selected leftovers + basic kitchen staples (ghee, salt, spices).
+ */
 
 export type PantryItem = {
   id: string;
-  /** the label used by the existing recipe matcher */
+  /** the label used by the recipe matcher */
   match: string;
   name: string;
   urdu: string;
@@ -12,27 +14,59 @@ export type PantryItem = {
 };
 
 export const pantryGrid: PantryItem[] = [
-  { id: "roti", match: "Roti / Naan", name: "Roti", urdu: "روٹی", emoji: "🫓", wastePkr: 40 },
-  { id: "daal", match: "Daal", name: "Daal", urdu: "دال", emoji: "🥣", wastePkr: 90 },
-  { id: "rice", match: "Cooked Rice", name: "Rice", urdu: "چاول", emoji: "🍚", wastePkr: 80 },
-  { id: "salan", match: "Chicken Qorma", name: "Salan", urdu: "سالن", emoji: "🍛", wastePkr: 220 },
-  { id: "aloo", match: "Boiled Potatoes", name: "Aloo", urdu: "آلو", emoji: "🥔", wastePkr: 50 },
-  { id: "pyaz", match: "Onion", name: "Pyaz", urdu: "پیاز", emoji: "🧅", wastePkr: 35 },
-  { id: "tamatar", match: "Tomatoes", name: "Tamatar", urdu: "ٹماٹر", emoji: "🍅", wastePkr: 45 },
-  { id: "anda", match: "Eggs", name: "Anday", urdu: "انڈے", emoji: "🥚", wastePkr: 60 },
-  { id: "dahi", match: "Yogurt", name: "Dahi", urdu: "دہی", emoji: "🥛", wastePkr: 70 },
-  { id: "paneer", match: "Paneer", name: "Paneer", urdu: "پنیر", emoji: "🧀", wastePkr: 150 },
-  { id: "palak", match: "Spinach (Palak)", name: "Palak", urdu: "پالک", emoji: "🥬", wastePkr: 55 },
+  {
+    id: "salan",
+    match: "Leftover Salan",
+    name: "Leftover Salan",
+    urdu: "بچا ہوا سالن",
+    emoji: "🍛",
+    wastePkr: 320,
+  },
+  {
+    id: "rice",
+    match: "Cooked Rice",
+    name: "Leftover Rice",
+    urdu: "پکے ہوئے چاول",
+    emoji: "🍚",
+    wastePkr: 140,
+  },
+  {
+    id: "roti",
+    match: "Roti / Naan",
+    name: "Roti / Chapati",
+    urdu: "روٹی / چپاتی",
+    emoji: "🫓",
+    wastePkr: 60,
+  },
+  {
+    id: "daal",
+    match: "Daal",
+    name: "Leftover Daal",
+    urdu: "بچی ہوئی دال",
+    emoji: "🥣",
+    wastePkr: 130,
+  },
+  {
+    id: "aloo",
+    match: "Boiled Potatoes",
+    name: "Boiled Potatoes",
+    urdu: "ابلے ہوئے آلو",
+    emoji: "🥔",
+    wastePkr: 80,
+  },
+  { id: "anda", match: "Eggs", name: "Anday", urdu: "انڈے", emoji: "🥚", wastePkr: 90 },
+  { id: "tamatar", match: "Tomatoes", name: "Tamatar", urdu: "ٹماٹر", emoji: "🍅", wastePkr: 50 },
+  { id: "pyaz", match: "Onion", name: "Pyaz", urdu: "پیاز", emoji: "🧅", wastePkr: 40 },
+  { id: "dahi", match: "Yogurt", name: "Dahi", urdu: "دہی", emoji: "🥛", wastePkr: 80 },
   {
     id: "bread",
     match: "Bread Slices",
-    name: "Bread",
+    name: "Bread Slices",
     urdu: "ڈبل روٹی",
     emoji: "🍞",
-    wastePkr: 45,
+    wastePkr: 60,
   },
-  { id: "matar", match: "Peas", name: "Matar", urdu: "مٹر", emoji: "🫛", wastePkr: 50 },
-  { id: "gajar", match: "Carrots", name: "Gajar", urdu: "گاجر", emoji: "🥕", wastePkr: 40 },
+  { id: "palak", match: "Spinach (Palak)", name: "Palak", urdu: "پالک", emoji: "🥬", wastePkr: 50 },
   {
     id: "mirch",
     match: "Green Chillies",
@@ -49,259 +83,235 @@ export type Remix = {
   title: string;
   urdu: string;
   emoji: string;
-  /** pantry ids required */
+  /** pantry ids required — STRICT: every single one must be present in user leftovers */
   needs: string[];
   minutes: number;
+  servings: string;
   idea: string;
   savesPkr: number;
   steps: string[];
   proTip?: string;
+  /** Standard pantry staples already present in every home kitchen (never bought extra) */
   pantryExtras?: string[];
 };
 
-/** Creative "second life" transformations, keyed on the tapped pantry tiles. */
+/** Creative "second life" family-sized transformations, strictly keyed on tapped pantry tiles. */
 export const remixes: Remix[] = [
   {
-    id: "rx-roti-pizza",
-    title: "Roti Pizza",
-    urdu: "روٹی پیزا",
-    emoji: "🍕",
-    needs: ["roti", "tamatar"],
-    minutes: 10,
-    idea: "Spread crushed tamatar and chilli on stale roti, top with cheese or paneer, and crisp it on a tawa with the lid on.",
-    savesPkr: 280,
+    id: "rx-salan-rice-pulao",
+    title: "Degh-Style Heavy Salan Pulao",
+    urdu: "دیغی سالن دم پلاؤ (فیملی سائز)",
+    emoji: "🍲",
+    needs: ["salan", "rice"],
+    minutes: 35,
+    servings: "Serves 4–6 (Full Family Batch)",
+    idea: "Combine cold cooked rice directly with rich leftover chicken/beef/veg salan. Steam on heavy dum for a fragrant, degh-style biryani-pulao without buying any extra meat or groceries.",
+    savesPkr: 520,
     steps: [
-      "Prepare Base & Pan: Bachi hui roti ko dono taraf halka sa ghee ya oil lagayein aur tawa medium aanch par 1 minute garam karein.",
-      "Sauce & Tomato Layer: Ek katoray mein mashed tamatar, chutki kali mirch, kuti laal mirch (chilli flakes), aur namak mila kar roti par barabar phelayein.",
-      "Topping: Upar se baareek kata pyaz, hari mirch, aur cheese ya crushed paneer phaila dein.",
-      "Cover & Crisp: Tawa ko kisi plate ya patilay ke dhakkan se 3-4 minute dhaanp dein taake cheese pighal jaye aur nichla hissa nihayat crispy ban jaye.",
-      "Finish & Serve: Taway se utaar kar chaat masala chirkein aur slice karke garam garam pesh karein.",
+      "Prep Salan & Gravy: Raat ka bacha hua chicken, beef ya sabzi ka salan ek bhari painday wali deghchi mein daal kar 2 minute garam karein.",
+      "Layering Cold Rice: Fridge ke thanday bache hue chawal ko haath se halka khol lein aur salan ke upar barabar phaila dein.",
+      "Steam Infusion & Ghee: 1 khane ka chamach desi ghee ya tail upar se chhirkein aur chutki garam masala ya kuti kali mirch daalein.",
+      "The 15-Minute Dum: Deghchi ka dhakkan kisi saaf kapray (tauliya) se lapet kar aanch bilkul halki (dum) kar dein aur 15-20 minute dum dein.",
+      "Gentle Fluff: Chamach ki pusht se halkay haath se neechay se upar mix karein taake salan ka roghan aur masalay chawal ke har daanay mein sama jayein.",
     ],
     proTip:
-      "Aanch bilkul halki (dum) rakhein taake roti jalay nahi balkay thin-crust pizza jaisi khasta banay.",
-    pantryExtras: ["Chilli flakes", "Kali mirch", "Ghee / Oil"],
+      "Thanday bache hue chawal dum par tootte nahi balkay khilay khilay degh jaisay bante hain.",
+    pantryExtras: ["Desi ghee / Oil", "Garam masala", "Namak (chutki)"],
   },
   {
-    id: "rx-daal-cutlet",
-    title: "Daal Ke Cutlets",
-    urdu: "دال کے کٹلٹس",
+    id: "rx-roti-salan-churma",
+    title: "Traditional Pakistani Roti Churma",
+    urdu: "روایتی سالن روٹی کُٹّی / چُورما",
+    emoji: "🥘",
+    needs: ["roti", "salan"],
+    minutes: 15,
+    servings: "Serves 4–5 (Hearty Family Feast)",
+    idea: "Shred stale chapatis into bite-sized pieces, toss directly into hot spiced salan gravy with roasted cumin and ghee until the rotis absorb every drop of rich gravy.",
+    savesPkr: 380,
+    steps: [
+      "Shred Basi Roti: Bachi hui 4-6 sukhi rotian haath se chotay chotay tukron mein tor lein.",
+      "Heat & Loosen Salan: Karahi mein bacha hua salan (gosht, chicken ya daal/sabzi) 1/2 cup paani ke sath ubaalein taake shorba patla aur garam ho jaye.",
+      "Fold Roti Crumbs: Roti ke tukray salan mein shamil karein aur aanch darmiyani kar dein taake roti sara shorba jazb kar le.",
+      "Ghee & Cumin Sear: 1 chamach ghee aur thora sa bhuna zeera daal kar 3 minute achi tarah bhunai karein jab tak roghan chamakne lagay.",
+      "Garnish & Serve: Garam garam plate mein nikaalein; har niwalay mein gosht aur masalaydaar roti ka zabardast lutf aayega.",
+    ],
+    proTip:
+      "Roti jitni purani aur khushk hogi, utna hi zyada salan ka roghan aur zaiqa jazb karegi.",
+    pantryExtras: ["Desi ghee / Oil", "Bhuna zeera"],
+  },
+  {
+    id: "rx-daal-aloo-cutlet",
+    title: "Badi Family Daal Aloo Cutlet Platter",
+    urdu: "بڑی فیملی دال آلو کٹلٹس پلیٹر",
     emoji: "🥙",
     needs: ["daal", "aloo"],
     minutes: 25,
-    idea: "Mash yesterday's daal with aloo, bind with breadcrumbs, and shallow-fry into crisp evening cutlets.",
+    servings: "Serves 5–6 (Yields 16–20 Crisp Cutlets)",
+    idea: "Thicken leftover daal and mash with boiled potatoes, seasoned with kitchen spices. Pan-fry into crisp golden cutlets that feed the entire family for dinner or evening tea.",
+    savesPkr: 440,
+    steps: [
+      "Thicken Cold Daal: Bachi hui daal ko pan mein tez aanch par 3-4 minute pakayein jab tak wo garhi paste ban jaye.",
+      "Mash with Potatoes: Ublay hue aloo ko chheel kar katoray mein achi tarah mash karein. Garhi daal shamil karein.",
+      "Spice Seasoning: Namak, laal mirch, zeera powder aur chatpata masala milayein (koi bazaar ki cheez zaroori nahi).",
+      "Shape 16-20 Cutlets: Haathon par halka oil laga kar shami kebab jaisi gol tikkian bana lein.",
+      "Pan-Fry Crisp: Taway par 2 chamach tel garam karke dono taraf se khasta sunehra fry kar lein.",
+    ],
+    proTip:
+      "Aloo mukammal thanday hon to tikkian taway par tootti nahi hain aur khasta banti hain.",
+    pantryExtras: ["Cooking oil", "Namak", "Laal mirch", "Zeera"],
+  },
+  {
+    id: "rx-rice-daal-khichdi",
+    title: "Traditional Tawa Khichdi & Daal Chawal Bhuna",
+    urdu: "روایتی تڑکہ توا کھچڑی (بچے دال چاول کا تڑکہ)",
+    emoji: "🍛",
+    needs: ["rice", "daal"],
+    minutes: 15,
+    servings: "Serves 4–6 (Comfort Food Batch)",
+    idea: "Combine leftover rice and leftover daal in a smoking hot pan with zeera and red chilli tadka. Instant comfort meal for the whole family without an extra rupee spent.",
     savesPkr: 320,
     steps: [
-      "Thicken Yesterday's Daal: Raat ki bachi hui daal ko bowl mein lein; agar patli ho to aanch par 2 minute pakayein taake paani kam ho jaye.",
-      "Mash Potatoes & Aromatics: 2 ublay hue aloo mash karein. Is mein daal, baareek kata pyaz, hari mirch, hara dhania, zeera powder, aur garam masala achi tarah mix karein.",
-      "Binding & Shaping: 2-3 chamach double roti ka choora (breadcrumbs) ya sooji shamil karein taake mixture bind ho jaye. Haath par halka oil laga kar gol tikkian banayein.",
-      "Shallow Fry: Non-stick pan mein 2-3 khane ke chamach oil garam karein aur cutlets ko medium aanch par dono taraf sunehra aur khasta hone tak tal lein.",
-      "Serve: Garam chai, pudinay ke raite ya tomato ketchup ke sath pesh karein.",
-    ],
-    proTip: "Aloo thanday hone par mash karein; garam aloo mixture ko patla kar dete hain.",
-    pantryExtras: ["Breadcrumbs / Sooji", "Zeera powder", "Garam masala"],
-  },
-  {
-    id: "rx-rice-kebab",
-    title: "Chawal Ke Kebab",
-    urdu: "چاول کے کباب",
-    emoji: "🍢",
-    needs: ["rice", "pyaz"],
-    minutes: 18,
-    idea: "Bind cold rice with pyaz, egg and green chilli, then pan-fry into tikkis that taste nothing like leftovers.",
-    savesPkr: 260,
-    steps: [
-      "Mash Cold Rice: Fridge ke thanday bache chawal ko haathon ya fork se halka sa mash karein taake daane aapas mein jud sakein.",
-      "Aromatics & Spices: Baareek kata pyaz, 2 hari mirchein, hara dhania, kuti laal mirch, namak, aur 1 phenta hua anda shamil karein.",
-      "Binding: 2 chamach besan ya cornflour milayein taake kebab fry karte waqt taway par tootne se bachein.",
-      "Shape & Pan-Fry: Shami kebab jaisi gol tikkian banayein. Pan mein halka sa oil garam karke darmiyani aanch par dono taraf se golden brown fry karein.",
-      "Serve: Upar se chatpata chaat masala chirkein aur dahi ke sath nosh farmayein.",
+      "Sizzle Ghee Tadka: Deghchi mein 2 chamach ghee garam karein aur sabut zeera kadkayein.",
+      "Blend Daal & Rice: Bachi hui daal aur thanday bache chawal ek sath pan mein daal dein.",
+      "Moisture Reduction: Halki aanch par chamach chalate hue 5-7 minute pakaayein taake daal chawal aapas mein yakjaan ho jayein.",
+      "Steam (Dum): Dhakkan dhaanp kar 5 minute dum dein taake har daana khushgawar narm ban jaye.",
+      "Serve: Garma-garam dhabba-style tawa khichdi tayaar hai jo bache khanon ka behtareen istemaal hai.",
     ],
     proTip:
-      "Fridge ke thanday chawal mein moisture kam hota hai, is se kebab bahar se extra crispy bante hain.",
-    pantryExtras: ["Besan / Cornflour", "Kuti laal mirch", "Chaat masala"],
+      "Thora sa desi ghee aakhir mein daal dein, bilkul taaza bani deghi khichdi ki khushboo aayegi.",
+    pantryExtras: ["Desi ghee / Oil", "Sabut zeera", "Chutki namak"],
   },
   {
-    id: "rx-salan-paratha",
-    title: "Salan Stuffed Paratha",
-    urdu: "سالن پراٹھا",
-    emoji: "🥟",
-    needs: ["salan"],
-    minutes: 15,
-    idea: "Dry out the leftover salan on high heat, stuff it into paratha dough, and griddle for a full breakfast.",
-    savesPkr: 400,
-    steps: [
-      "Evaporate Salan Gravy: Bache hue salan (chicken, gosht ya aloo) ko pan mein tez aanch par 2-3 minute pakayein jab tak shorba bilkul khushk ho jaye.",
-      "Shred Meat: Gosht ya chicken ke tukron ko kaantay (fork) se resha resha kar lein aur haddian alag kar dein.",
-      "Pairay & Dough Rolling: Gunday aate ke do chotay pairay bana kar dono ko bail lein. Ek roti par sukha hua salan phelayein aur kinaray chor dein.",
-      "Seal & Light Roll: Doosri roti upar rakh kar kinaray ungli se daba kar lock karein, phir halkay haath se belan pher lein.",
-      "Tawa Griddle: Garam taway par ghee ya oil lagate hue dono taraf se chamach se daba kar kurkura sunehra paratha tayaar karein.",
-    ],
-    proTip: "Salan ko pehle mukammal thanda kar lein; garam stuffing parathay ko phaar deti hai.",
-    pantryExtras: ["Gunda hua aata", "Desi ghee / Cooking oil"],
-  },
-  {
-    id: "rx-roti-churma",
-    title: "Roti Churma Chaat",
-    urdu: "روٹی چاٹ",
-    emoji: "🥗",
-    needs: ["roti", "dahi"],
-    minutes: 12,
-    idea: "Crisp roti squares, smother with dahi, imli chutney and chaat masala for an instant iftar-style chaat.",
-    savesPkr: 240,
-    steps: [
-      "Crisp Roti Croutons: Bachi hui basi roti ke 1 inch chokor tukray kaat lein. Taway par 1 chamach oil mein papdi ki tarah karara fry ya toast karein.",
-      "Season Dahi: Dahi mein chutki cheeni, kala namak, aur bhuna zeera daal kar achi tarah creamy phent lein.",
-      "Assemble Platter: Chaat ki plate mein kurkuri roti ke tukray phailayein; upar ublay aloo ke tukray aur kata pyaz daalein.",
-      "Drizzle Chutneys: Phenta hua dahi, meethi imli ki chatni aur teekhi hari chatni upar khoob daalein.",
-      "Garnish & Serve: Chaat masala aur hara dhania chirak kar foran pesh karein taake roti ki crunchiness barqaraar rahay.",
-    ],
-    proTip:
-      "Air fryer ya taway par roti 2 minute mein behtareen papdi ban jati hai jo market ki fried papdi se kahin zyada sehatmand hai.",
-    pantryExtras: ["Imli chatni", "Kala namak", "Bhuna zeera"],
-  },
-  {
-    id: "rx-daal-soup",
-    title: "Daal Shorba",
-    urdu: "دال شوربہ",
-    emoji: "🍲",
-    needs: ["daal", "tamatar"],
-    minutes: 14,
-    idea: "Blend daal with tomato, garlic and a lemon squeeze into a thin winter shorba served with roti croutons.",
-    savesPkr: 210,
-    steps: [
-      "Blend Daal Base: Bachi hui daal ko blender mein 1 cup paani aur 1 tamatar ke sath 30 second smooth blend kar lein.",
-      "Aromatic Tadka: Deghchi mein 1 chamach makhan ya ghee garam karein, kata lehsan aur zeera daal kar 30 second kadkayein.",
-      "Simmer & Season: Blended daal shamil karein, halki aanch par 5-7 minute ubaal aane dein. Kali mirch aur namak check karke adjust karein.",
-      "Citrus Kick: Choolay se utaar kar aadhay leemo ka ras aur kata hua hara dhania nichor dein.",
-      "Serve with Croutons: Roti ke tawa-toasted tukray daal kar garma-garam bowl mein serve karein.",
-    ],
-    proTip:
-      "Sardiyon mein ye shorba galay aur hazmay ke liye behtareen hai aur gas ka kharcha bhi sirf 5-7 minute hai.",
-    pantryExtras: ["Lehsan", "Leemo", "Kali mirch", "Makhan"],
-  },
-  {
-    id: "rx-rice-kheer",
-    title: "Quick Chawal Kheer",
-    urdu: "چاول کی کھیر",
-    emoji: "🍮",
-    needs: ["rice", "dahi"],
-    minutes: 22,
-    idea: "Simmer leftover rice in milk with sugar and elaichi — dessert from what was heading to the bin.",
-    savesPkr: 300,
-    steps: [
-      "Crush Cooked Rice: Pake hue bache chawal ko haathon se ya blender mein thora sa doodh daal kar dardara pees lein.",
-      "Boil Milk: Patilay mein 3 cup doodh ubaalein aur us mein 2 sabz elaichi koot kar shamil karein.",
-      "Simmer Together: Pise hue chawal ubalte doodh mein daalein aur aanch halki karke musalsal chamach chalayein taake talay na lagay.",
-      "Sweeten: Jab kheer garhi ho jaye (12-15 minute), 4-5 chamach cheeni ya condensed milk shamil karein.",
-      "Cool & Garnish: Badam, pista ya kewra water daal kar fridge mein thanda karein aur mazaydaar meetha pesh karein.",
-    ],
-    proTip:
-      "Pehle se pake chawal se kheer banne mein aam kheer ke muqablay aadhay se bhi kam gas aur waqt lagta hai.",
-    pantryExtras: ["Doodh (Milk)", "Sabz Elaichi", "Cheeni"],
-  },
-  {
-    id: "rx-anda-bread",
-    title: "Anda Bread Roll",
-    urdu: "انڈا بریڈ رول",
-    emoji: "🌯",
-    needs: ["bread", "anda"],
-    minutes: 15,
-    idea: "Flatten stale bread, fill with spiced aloo or salan, roll, dip in egg and fry golden.",
-    savesPkr: 190,
-    steps: [
-      "Flatten Slices: Bachi hui bread ke kinare kaat lein aur belan se daba kar patla flatten kar lein.",
-      "Prepare Stuffing: Katoray mein mash kiya aloo ya bacha hua salan, hari mirch aur namak mila kar filling tayaar karein.",
-      "Roll & Seal: Bread ke darmayan filling rakhein, kinaray par paani ki ungli pher kar tight roll bana lein.",
-      "Egg Wash: Anday mein chutki namak aur kali mirch daal kar phent lein, aur roll ko anday mein achi tarah dip karein.",
-      "Pan-Fry Golden: Frying pan mein 2 chamach oil mein har taraf ghuma kar sunehra fry karein.",
-    ],
-    proTip:
-      "Agar bread purani aur sookhi ho to rolling se pehle halka sa paani ka spray karein taake tutay nahi.",
-    pantryExtras: ["Kali mirch", "Cooking oil"],
-  },
-  {
-    id: "rx-palak-bhurji",
-    title: "Palak Paneer Bhurji",
-    urdu: "پالک پنیر بھُرجی",
-    emoji: "🥘",
-    needs: ["palak", "paneer"],
-    minutes: 18,
-    idea: "Wilt tired palak with tomato and crumble paneer through it for a fresh sabzi.",
-    savesPkr: 350,
-    steps: [
-      "Wash & Chop: Murjhai hui palak ko dho kar baareek kaat lein.",
-      "Tadka Base: Pan mein 1 chamach tel garam karein, kata pyaz, adrak lehsan paste aur hari mirch 2 minute sautey karein.",
-      "Tomato Masala: Kata tamatar, haldi, laal mirch aur namak daal kar masala bhun lein jab tak tel alag ho jaye.",
-      "Wilt Spinach & Add Paneer: Palak daal kar 3 minute pakayein jab tak wo narm ho jaye. Phir crumbled paneer daal kar halkay haath se mix karein.",
-      "Dum & Serve: Thora sa pisa garam masala aur makhan daal kar 2 minute dum dein aur garam roti ke sath pesh karein.",
-    ],
-    proTip:
-      "Paneer ko aakhir mein daalein aur zyada na pakayein taake paneer narm aur malai jaisa rahay.",
-    pantryExtras: ["Adrak lehsan paste", "Haldi", "Garam masala"],
-  },
-  {
-    id: "rx-veg-fried-rice",
-    title: "Desi Fried Rice",
-    urdu: "دیسی فرائیڈ رائس",
-    emoji: "🍛",
-    needs: ["rice", "matar"],
-    minutes: 14,
-    idea: "Toss cold rice on high flame with matar, gajar and scrambled anda — the wok heat hides the leftovers.",
-    savesPkr: 230,
-    steps: [
-      "Separate Rice Grains: Fridge ke thanday chawal ko haath se alag alag daanay kar lein. Matar aur gajar baareek kaat lein.",
-      "Quick Scramble: Kadhai mein 1 chamach tel daal kar 1 anda scramble karein aur plate mein nikaal lein.",
-      "High Flame Stir-Fry: Kadhai tez aanch par garam karein. Lehsan, hari mirch, matar aur gajar ko tez flame par 2 minute toss karein.",
-      "Toss Rice & Sauces: Chawal, 1 chamach soya sauce, 1/2 chamach sirka, kali mirch aur namak daal kar tez aanch par 3 minute musalsal hilayein.",
-      "Combine & Serve: Scrambled anda aur hara pyaz mila kar dhuwaan nikalte hue garam garam serve karein.",
-    ],
-    proTip:
-      "Flame tez hona zaroori hai taake chawal steam ho kar chipkein nahi balkay restaurant jaisa wok-flavor aaye.",
-    pantryExtras: ["Soya sauce", "Sirka", "Kali mirch"],
-  },
-  {
-    id: "rx-aloo-tamatar",
-    title: "Aloo Tamatar Salan",
-    urdu: "آلو ٹماٹر سالن",
+    id: "rx-salan-aloo-bhuna",
+    title: "Khandani Aloo Salan Dum (Double Volume Salan)",
+    urdu: "خاندانی آلو سالن بھنا دم (سالن دُگنا کرنے کا گر)",
     emoji: "🥔",
-    needs: ["aloo", "tamatar"],
-    minutes: 22,
-    idea: "Turn boiled aloo and soft tomatoes into a thin salan that stretches to feed the whole family with roti.",
-    savesPkr: 200,
+    needs: ["salan", "aloo"],
+    minutes: 20,
+    servings: "Serves 5–6 (Doubled Family Curry)",
+    idea: "Cube boiled potatoes and simmer inside leftover meat/chicken salan with a splash of water and cumin to double the curry portion, feeding 6 people with zero new groceries.",
+    savesPkr: 460,
     steps: [
-      "Rough Mash: Bache ublay aloo ko mota mota tor lein (bilkul paste na banayein balkay tukray rahein).",
-      "Gravy Tadka: Deghchi mein 2 chamach tel garam karein, zeera, rai daana aur kata pyaz sunehra fry karein.",
-      "Bhunai: Tamatar paste, haldi, dhania powder, namak aur laal mirch daal kar tel nikalne tak bhunein.",
-      "Simmer: Aloo aur 1.5 cup paani shamil karein. Dhaank kar darmiyani aanch par 6-8 minute pakaayein.",
-      "Thickening Secret: Ek do aloo ke tukron ko chamach ki pusht se salan mein ghol dein taake shorba garha aur lazeez ban jaye.",
+      "Dice Potatoes: Ublay hue aloo ko motay chokor tukron mein kaat lein.",
+      "Infuse Gravy: Karahi mein bacha hua salan aur aadhha cup paani daal kar ubaal lein.",
+      "Toss Aloo: Aloo ke tukray salan mein daalein taake wo shorba aur masalay jazb kar lein.",
+      "Bhunai & Dum: 8-10 minute halki aanch par pakaayein jab tak gravy garhi ho jaye aur roghan upar aa jaye.",
+      "Serve: Bacha hua thora sa salan pooray khandan ke liye baray saalun mein badal chuka hai.",
     ],
-    proTip: "Aakhir mein kasuri methi hath se masal kar daal dein, dhabba style khushboo aayegi.",
-    pantryExtras: ["Zeera", "Haldi", "Kasuri methi"],
+    proTip:
+      "Ek ya do aloo ke tukron ko chamach se masal dein, gravy foran garhi aur khushgawar ho jayegi.",
+    pantryExtras: ["Cooking oil", "Zeera", "Paani"],
   },
   {
-    id: "rx-dahi-baray",
-    title: "Dahi Baray from Daal",
-    urdu: "دہی بڑے",
-    emoji: "🍡",
-    needs: ["daal", "dahi"],
-    minutes: 30,
-    idea: "Whip the daal light with a pinch of soda, fry into baray and soak in dahi with chaat masala.",
+    id: "rx-salan-daal-dalcha",
+    title: "Traditional Shahi Dalcha Gosht Dum",
+    urdu: "روایتی شاہی دالچہ گوشت دم",
+    emoji: "🥣",
+    needs: ["salan", "daal"],
+    minutes: 25,
+    servings: "Serves 5–6 (Royal Mughlai Fusion)",
+    idea: "Merge leftover meat salan and leftover daal together on low heat with a sizzling ghee and zeera tarka. A legendary royal wedding dish resurrected from yesterday's pots.",
+    savesPkr: 550,
+    steps: [
+      "Combine Pots: Ek bhari deghchi mein bachi hui daal aur bacha hua gosht/chicken salan ikatha daal dein.",
+      "Simmer & Blend: 1 cup paani daal kar darmiyani aanch par ubaal aane dein. Madhani ya chamach se halka ghot lein.",
+      "Ghee Tarka: Frying pan mein 2 chamach ghee garam karein, zeera aur kuti laal mirch kadka kar ubalti dalcha par daalein.",
+      "Low Flame Dum: Dhakkan dhaanp kar 10 minute dum par chhor dein taake daal aur gosht ke zaaiqay yakjaan ho jayein.",
+      "Family Feast: Garam roti ya bache chawal ke sath 5-6 afrad ko ba-asaani kifayat se khilayein.",
+    ],
+    proTip:
+      "Dalcha dosray din aur bhi zyada mazedaar lagti hai kyunke masalay daal ke andar jazb ho chukay hotay hain.",
+    pantryExtras: ["Desi ghee / Oil", "Zeera", "Laal mirch"],
+  },
+  {
+    id: "rx-roti-daal-missi",
+    title: "Traditional Daal Bhari Missi Tawa Roti",
+    urdu: "دال بھری مصالحے دار مِسی روٹی",
+    emoji: "🫓",
+    needs: ["roti", "daal"],
+    minutes: 15,
+    servings: "Serves 4–5 (Crisp Tawa Platter)",
+    idea: "Spread thick leftover daal with a sprinkle of crushed chilli on stale roti and griddle on a tawa with ghee for crisp traditional Missi rotis.",
+    savesPkr: 310,
+    steps: [
+      "Daal Layer: Sukhi bachi hui roti par bachi hui garhi daal ki patli teh phailayein.",
+      "Spice Dust: Upar chutki laal mirch, namak aur thora zeera chhirkein.",
+      "Tawa Crisp: Garam taway par ghee laga kar roti ko daal wali side se pehle 2 minute sekein.",
+      "Flip & Toast: Palat kar dosri taraf se bhi karara kurkura sunehra hone tak fry karein.",
+      "Serve: Garam chai ya raite ke sath khayein, basi roti bilkul taaza aur khasta ban jati hai.",
+    ],
+    proTip: "Dono taraf chamach se daba daba kar sekein taake papdi jaisi crunchiness banay.",
+    pantryExtras: ["Desi ghee / Oil", "Laal mirch", "Namak"],
+  },
+  {
+    id: "rx-roti-aloo-rolls",
+    title: "Aloo Masala Tawa Roti Rolls",
+    urdu: "آلو مصالحہ توا روٹی رولز (بچوں اور فیملی کا فیورٹ)",
+    emoji: "🌯",
+    needs: ["roti", "aloo"],
+    minutes: 15,
+    servings: "Serves 4–5 (Generous Roll Platter)",
+    idea: "Mash cold boiled potatoes with salt, chilli, and cumin, spread across stale rotis, roll tight and tawa-toast in ghee for restaurant-style paratha rolls without buying flour.",
     savesPkr: 340,
     steps: [
-      "Aerate Daal: Bachi hui daal mein 1 chamach sooji aur ek chutki meetha soda milayein. Kaantay se 2 minute khoob phenten taake mixture phool jaye.",
-      "Fry Baray: Pan mein tel garam karein. Chamach se chotay baray daal kar medium aanch par dono taraf sunehra tal lein.",
-      "Warm Water Soak: Baray nikaal kar foran neel-garm namak walay paani mein 5 minute bhigo dein, phir hatheliyon se narm daba kar paani nichor lein.",
-      "Creamy Yogurt: Dahi ko thori cheeni aur bhuna zeera daal kar smooth phent kar baray ke upar ulat dein.",
-      "Chaat Topping: Imli chatni, pudina chatni aur chaat masala chirak kar thanda karke serve karein.",
+      "Mash Potato Filling: Ublay aloo ko namak, laal mirch aur zeera ke sath achi tarah masal lein.",
+      "Roll Preparation: Bachi hui roti par aloo ka mixture phaila kar tight cylindrical roll bana lein.",
+      "Moisten & Edge Seal: Roti ke kinaron par halka paani laga kar daba dein taake roll taway par khulay nahi.",
+      "Tawa Toasting: Taway par 1-2 chamach ghee garam karke roll ko ghuma ghuma kar sunehra sek lein.",
+      "Slice & Serve: Darmayan se do hissay karke serve karein; subah ka nashta ya shaam ka khana tayaar.",
     ],
-    proTip:
-      "Neel-garm paani mein bhigone se sara faltu tail nikal jata hai aur baray rooi jaisay mulayam ho jaate hain.",
-    pantryExtras: ["Meetha soda", "Sooji", "Imli chatni", "Chaat masala"],
+    proTip: "Roti ke kinaron par halka paani laga kar daba dein taake roll taway par khulay nahi.",
+    pantryExtras: ["Desi ghee / Oil", "Namak", "Laal mirch"],
+  },
+  {
+    id: "rx-salan-bhunai",
+    title: "Highway Shinwari Shredded Meat Bhunai",
+    urdu: "ہائی وے شنواری بھنا گوشت کڑاہی (فیملی سائز)",
+    emoji: "🥩",
+    needs: ["salan"],
+    minutes: 20,
+    servings: "Serves 4–5 (Concentrated Rich Meat Gravy)",
+    idea: "Reduce leftover meat/chicken salan gravy on high heat with ghee and black pepper until it shreds into thick, restaurant-style karahi meat clinging to the pan.",
+    savesPkr: 420,
+    steps: [
+      "Boil Down Gravy: Karahi mein bacha hua salan tez aanch par pakayein taake faltu shorba khushk ho jaye.",
+      "Shred Meat Fibers: Kaantay (fork) se gosht ya chicken ko resha resha kar lein.",
+      "High Flame Bhunai: 1 chamach ghee aur kali mirch daal kar tez aanch par musalsal chamach hilayein jab tak masalay gosht se lipat jayein.",
+      "Wok Glaze Sear: Kadhai ke kinaron par 1 minute gosht ko bhun kar restaurant-style wok glaze banayein.",
+      "Serve: Garam rotiyon ke sath pesh karein; aisa zaiqa banega jaise abhi highway dhabay se taaza banwaya ho.",
+    ],
+    proTip: "Aanch tez rakhein aur chamach musalsal chalayein taake wok flavor aaye.",
+    pantryExtras: ["Desi ghee / Oil", "Kali mirch"],
+  },
+  {
+    id: "rx-rice-zeera",
+    title: "Desi Ghee Zeera Tawa Rice",
+    urdu: "دیسی گھی زیرہ توا چاول (خوشبودار دیغی سٹائل)",
+    emoji: "🍚",
+    needs: ["rice"],
+    minutes: 10,
+    servings: "Serves 4–5 (Aromatic Rice Transformation)",
+    idea: "Transform cold clumpy rice into fragrant, separate-grain royal Zeera rice in just 10 minutes with hot desi ghee, cumin, and a covered steam.",
+    savesPkr: 200,
+    steps: [
+      "Separate Rice Grains: Thanday bache chawal ko haath se halka alag alag khol lein.",
+      "Cumin Splutter: Karahi mein 2 chamach desi ghee garam karein aur sabut zeera kadkayein.",
+      "Toss & Warm: Chawal daal kar 2 minute tez aanch par halkay haath se toss karein taake har daanay par ghee lag jaye.",
+      "Covered Steam (Dum): Dhakkan dhaanp kar 3-4 minute dum dein taake chawal bilkul taaza phool jayein.",
+      "Serve Piping Hot: Khushbodar zeera rice plate mein nikaal kar daal ya salan ke sath lutf uthayein.",
+    ],
+    proTip: "Thora sa namak ghee mein pehle milane se chawal mein zaiqa barabar phelta hai.",
+    pantryExtras: ["Desi ghee / Oil", "Sabut zeera", "Namak"],
   },
 ];
 
 export type RemixMatch = Remix & { have: string[]; missing: string[]; score: number };
 
+/**
+ * STRICT ZERO-EXTRA-GROCERY:
+ * ONLY suggest transformations where 100% of required leftovers are present in user's selection.
+ * Missing items are banned.
+ */
 export function remixFor(selectedIds: string[]): RemixMatch[] {
   return remixes
     .map((r) => {
@@ -309,8 +319,8 @@ export function remixFor(selectedIds: string[]): RemixMatch[] {
       const missing = r.needs.filter((n) => !selectedIds.includes(n));
       return { ...r, have, missing, score: have.length / r.needs.length };
     })
-    .filter((r) => r.have.length > 0)
-    .sort((a, b) => b.score - a.score || b.savesPkr - a.savesPkr);
+    .filter((r) => r.missing.length === 0) // Strict zero-extra-grocery constraint: ALL required leftovers must be present!
+    .sort((a, b) => b.savesPkr - a.savesPkr);
 }
 
 /** Weekly grocery savings from rescuing the tapped leftovers. */
